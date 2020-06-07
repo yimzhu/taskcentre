@@ -20,6 +20,7 @@ public class MaterialStateMachine extends AbstractStateMachine<MaterialStateMach
     @Override
     protected void afterTransitionCompleted(MaterialState fromState, MaterialState toState, MaterialEvent event, Material material) {
             material.setState(toState);
+            System.out.println("aftertranstioncomplete");
             IMaterialService materialService = applicationContext.getBean(IMaterialService.class);
             materialService.updateById(material);
     }

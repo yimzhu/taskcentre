@@ -1,5 +1,6 @@
 package com.qualintech.taskcentre.controller;
 
+import com.qualintech.taskcentre.controller.contract.MaterialFlowTaskCreateRequest;
 import com.qualintech.taskcentre.entity.Material;
 import com.qualintech.taskcentre.enums.MaterialEvent;
 import com.qualintech.taskcentre.enums.MaterialState;
@@ -36,8 +37,9 @@ public class MaterialController {
     }
 
     @PostMapping("")
-    public Material createMaterial() {
+    public Material createMaterial(@RequestBody MaterialFlowTaskCreateRequest request) {
         Material material = new Material();
+        material.setOwnerId(request.getOwnerId());
         material.setState(MaterialState.INIT);
         materialService.save(material);
         return material;

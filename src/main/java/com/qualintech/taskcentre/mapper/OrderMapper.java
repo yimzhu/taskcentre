@@ -5,6 +5,9 @@ import com.qualintech.taskcentre.entity.Order;
 import org.apache.ibatis.annotations.Mapper;
 import org.springframework.stereotype.Repository;
 
+/**
+ * @author yimzhu
+ */
 @Mapper
 @Repository
 public interface OrderMapper extends BaseMapper<Order> {

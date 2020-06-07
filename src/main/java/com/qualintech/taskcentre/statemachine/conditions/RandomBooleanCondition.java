@@ -7,6 +7,9 @@ import org.squirrelframework.foundation.fsm.AnonymousCondition;
 
 import java.util.Random;
 
+/**
+ * @author yimzhu
+ */
 @Component
 @Slf4j
 public class RandomBooleanCondition extends AnonymousCondition<Order> {

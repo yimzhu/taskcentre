@@ -3,6 +3,10 @@ package com.qualintech.taskcentre.statemachine;
 import com.qualintech.taskcentre.entity.Material;
 import com.qualintech.taskcentre.enums.MaterialEvent;
 import com.qualintech.taskcentre.enums.MaterialState;
+import com.qualintech.taskcentre.statemachine.actions.MeterialNodePassAction;
+import com.qualintech.taskcentre.statemachine.actions.OrderPaySuccessAction;
+import com.qualintech.taskcentre.statemachine.conditions.MaterialReviewCheckCondition;
+import com.qualintech.taskcentre.statemachine.conditions.ReviewCheckCondition;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -17,8 +21,6 @@ import org.squirrelframework.foundation.fsm.StateMachineBuilderFactory;
 
 @Service
 public class MaterialStateMachineEngine implements ApplicationContextAware {
-//   @Autowired
-//    private OrderPaySuccessAction orderPaySuccessAction;
 
     private StateMachineBuilder<MaterialStateMachine, MaterialState, MaterialEvent, Material> stateMachineBuilder;
 
@@ -34,12 +36,14 @@ public class MaterialStateMachineEngine implements ApplicationContextAware {
      */
     protected void configBuilder() {
         stateMachineBuilder.externalTransition()
-                .from(MaterialState.INIT).to(MaterialState.PROCESSING).on(MaterialEvent.DISPATCH);
-//                .when(applicationContext.getBean(RandomBooleanCondition.class))
-//                .perform(orderPaySuccessAction);
+                .from(MaterialState.INIT).to(MaterialState.PROCESSING).on(MaterialEvent.DISPATCH)
+                .when(applicationContext.getBean(MaterialReviewCheckCondition.class))
+                .perform(applicationContext.getBean(MeterialNodePassAction.class));
+
+//                .callMethod(MeterialNodePassAction);
 
 //        stateMachineBuilder.externalTransition()
-//                .from(OrderState.UNPAID).to(OrderState.PAID).on(OrderEvent.PAY_SUCCESS)
+//                .from(MaterialState.AUDITING).to(MaterialState.DONE).on(MaterialEvent.PAY_SUCCESS)
 //                .when(applicationContext.getBean(RandomBooleanCondition.class))
 //                .perform(applicationContext.getBean(OrderPaySuccessAction.class));
     }

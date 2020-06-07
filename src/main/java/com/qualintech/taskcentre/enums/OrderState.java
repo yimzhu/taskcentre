@@ -7,12 +7,14 @@ import lombok.Getter;
 
 /**
  * 实现 IEnum<String> 是为了 Order 的 state 属性在Mybatis中能直接使用此枚举
+ * 订单任务 9xx 测试用
+ * @author yimzhu
  */
 @AllArgsConstructor
 @Getter
 public enum OrderState {
-    UNPAID(0,"待支付"),     //待支付
-    PAID(1,"已支付"),       //已支付
+    UNPAID(900,"待支付"),     //待支付
+    PAID(901,"已支付"),       //已支付
 //    DELIVERING,  //配送中
 //    RECEIVED,    //已签收
 //    CLOSED;

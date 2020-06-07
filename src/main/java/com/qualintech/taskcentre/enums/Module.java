@@ -6,19 +6,15 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 /**
- * 实现 IEnum<String> 是为了 Order 的 state 属性在Mybatis中能直接使用此枚举
+ * @author yimzhu
  */
 @AllArgsConstructor
 @Getter
 public enum Module {
-    MATERIAL(0,"模块1"),
-    NCR(1,"模块2"),
-//    DONE,
-//    AUDITING,
-//    AUDIT_PASS,
-//    AUDIT_REJECT,
-//    RECALLED;
-;
+    MATERIAL(0,"来料管理"),
+    NCR(1,"问题管理"),
+    Order(9,"订单管理");
+
     @JsonValue
     @EnumValue
     private int code;

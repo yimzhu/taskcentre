@@ -6,19 +6,22 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 /**
- * 实现 IEnum<String> 是为了 Order 的 state 属性在Mybatis中能直接使用此枚举
+ * 来料用1xx表示状态
+ * @author yimzhu
  */
+
 @AllArgsConstructor
 @Getter
 public enum MaterialState {
-    INIT(0,"待派发"),
-    PROCESSING(10,"处理中"),
-//    DONE,
-//    AUDITING,
-//    AUDIT_PASS,
-//    AUDIT_REJECT,
-//    RECALLED;
-;
+    INIT(100,"待派发"),
+    PROCESSING(110,"处理中"),
+    DONE(120,"完成"),
+    AUDITING(130,"待审核"),
+    AUDIT_PASS(140,"审核通过"),
+    AUDIT_REJECT(150,"审核驳回"),
+    RECALLED(160,"已召回"),
+    OVERDUE(170,"逾期中");
+
     @JsonValue
     @EnumValue
     private int code;
