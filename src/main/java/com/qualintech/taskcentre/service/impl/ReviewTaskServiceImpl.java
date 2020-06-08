@@ -1,5 +1,6 @@
 package com.qualintech.taskcentre.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -72,10 +73,10 @@ public class ReviewTaskServiceImpl extends ServiceImpl<ReviewTaskMapper, ReviewT
         }
 
         ReviewTask reviewTask = new ReviewTask();
+        reviewTask.setOutTaskId(taskId);
+        reviewTask.setOutTaskState(taskSate);
         for(Long ownerId:ownerIds){
             reviewTask.setOwnerId(ownerId);
-            reviewTask.setTaskId(taskId);
-            reviewTask.setTaskState(taskSate);
             count = reviewTaskMapper.insert(reviewTask);
             log.info("插入主任务[" + taskId + "]的审核任务，审核人[" + ownerId + "]，状态：" + count + ", id:[" + reviewTask.getId() + "]");
             assert count==1?true:false;
@@ -89,45 +90,41 @@ public class ReviewTaskServiceImpl extends ServiceImpl<ReviewTaskMapper, ReviewT
      * @param taskId 任务ID
      * @param taskSate 任务状态
      */
-    public boolean saveReviewResForFlowTask(Long ownerId, Integer taskId, Module module, Integer taskSate, ReviewState result){
-        int sqlResult;
-
+    public boolean saveReviewForFlow(Long ownerId, Integer taskId, Module module, Integer taskSate, ReviewState result){
+        int count;
         ReviewTask reviewTask = new ReviewTask();
         reviewTask.setResult(result);
 
         UpdateWrapper<ReviewTask> reviewTaskUpdateWrapper = new UpdateWrapper<>();
         reviewTaskUpdateWrapper.eq("owner_id", ownerId);
-        reviewTaskUpdateWrapper.eq("task_id", taskId);
-        reviewTaskUpdateWrapper.eq("task_state", taskSate);
+        reviewTaskUpdateWrapper.eq("out_task_id", taskId);
+        reviewTaskUpdateWrapper.eq("out_task_state", taskSate);
         reviewTaskUpdateWrapper.eq("is_active", 1);
 
-        sqlResult = reviewTaskMapper.update(reviewTask, reviewTaskUpdateWrapper);
-        log.info("任务ID【" + taskId + "】, 审核人【" + ownerId + "】，审核结果【" + result.getName() + "】，记录保存成功数量【" + sqlResult + "】");
+        count = reviewTaskMapper.update(reviewTask, reviewTaskUpdateWrapper);
+        log.info("任务ID【" + taskId + "】, 审核人【" + ownerId + "】，审核结果【" + result.getName() + "】，记录保存成功数量【" + count + "】");
 
-        //检查审
-
+        //检查审核是否全部通过
         QueryWrapper<ReviewTask> reviewTaskQueryWrapper = new QueryWrapper<>();
         reviewTaskQueryWrapper.eq("owner_id", ownerId);
-        reviewTaskQueryWrapper.eq("task_id", taskId);
-        reviewTaskQueryWrapper.eq("task_state", ReviewState.REVIEW_FAIL);
-        reviewTaskQueryWrapper.eq("task_state", ReviewState.IN_REVIEW);
-//        int count = iReviewTaskService.count(reviewTaskQueryWrapper);
-//        log.info("任务ID【" + taskId + "】审核未到通过的数量为【" + count + "】");
+        reviewTaskQueryWrapper.eq("out_task_id", taskId);
+        reviewTaskQueryWrapper.ne("out_task_state", ReviewState.REVIEW_PASS);
+        reviewTaskUpdateWrapper.eq("is_active", 1);
+        count = reviewTaskMapper.selectCount(reviewTaskQueryWrapper);
+        log.info("任务ID【" + taskId + "】审核未到通过的数量为【" + count + "】");
 
-//        if(count!=0){
-//            return true;
-//        }
-
+        if(count!=0){
+            return true;
+        }
 
         FlowTask flowTask = new FlowTask();
         flowTask.setReviewState(ReviewState.CLOSE);
-        QueryWrapper<FlowTask> flowTaskQueryWrapper = new QueryWrapper<>();
-        flowTaskQueryWrapper.eq("module", module);
-        flowTaskQueryWrapper.eq("id", taskId);
-//        sqlResult = iFlowTaskService.update(flowTask, flowTaskQueryWrapper);
-//        log.info("任务ID【" + taskId + "】, 更新流程任务审核为成功【" + sqlResult + "】");
-//        assert sqlResult;
-
+        QueryWrapper<FlowTask> materialQueryWrapper = new QueryWrapper<>();
+        materialQueryWrapper.eq("module", module);
+        materialQueryWrapper.eq("id", taskId);
+        count = flowTaskMapper.update(flowTask, materialQueryWrapper);
+        log.info("任务ID【" + taskId + "】, 更新流程任务审核为成功【" + count + "】");
+        assert count==1?true:false;
         return true;
     }
 
@@ -137,44 +134,41 @@ public class ReviewTaskServiceImpl extends ServiceImpl<ReviewTaskMapper, ReviewT
      * @param taskId 任务ID
      * @param taskSate 任务状态
      */
-//    public boolean saveReviewResForDelegateTask(Long ownerId, Integer taskId,  Integer taskSate, ReviewState result){
-//        Boolean sqlResult;
-//
-//        ReviewTask reviewTask = new ReviewTask();
-//        reviewTask.setResult(result);
-//
-//        UpdateWrapper<ReviewTask> reviewTaskUpdateWrapper = new UpdateWrapper<>();
-//        reviewTaskUpdateWrapper.eq("owner_id", ownerId);
-//        reviewTaskUpdateWrapper.eq("task_id", taskId);
-//        reviewTaskUpdateWrapper.eq("task_state", taskSate);
-//        reviewTaskUpdateWrapper.eq("is_active", 1);
-//
-//        sqlResult = iReviewTaskService.update(reviewTask, reviewTaskUpdateWrapper);
-//        log.info("任务ID【" + taskId + "】, 审核人【" + ownerId + "】，审核结果【" + result.getName() + "】，记录保存成功【" + sqlResult + "】");
-//
-//        assert sqlResult;
-//        //检查审核是否全部结束
-//
-//        QueryWrapper<ReviewTask> reviewTaskQueryWrapper = new QueryWrapper<>();
-//        reviewTaskQueryWrapper.eq("owner_id", ownerId);
-//        reviewTaskQueryWrapper.eq("task_id", taskId);
-//        reviewTaskQueryWrapper.eq("task_state", ReviewState.REVIEW_FAIL);
-//        reviewTaskQueryWrapper.eq("task_state", ReviewState.IN_REVIEW);
-//        int count = iReviewTaskService.count(reviewTaskQueryWrapper);
-//        log.info("任务ID【" + taskId + "】审核未到通过的数量为【" + count + "】");
-//
-//        if(count!=0){
-//            return true;
-//        }
-//
-//        DelegateTask delegateTask = new DelegateTask();
-//        delegateTask.setReviewState(ReviewState.CLOSE);
-//        QueryWrapper<DelegateTask> delegateTaskQueryWrapper = new QueryWrapper<>();
-//        delegateTaskQueryWrapper.eq("flow_task_id", taskId);
-//        sqlResult = iDelegateTaskService.update(delegateTask, delegateTaskQueryWrapper);
-//        log.info("任务ID【" + taskId + "】, 更新委托任务审核为成功【" + sqlResult + "】");
-//        assert sqlResult;
-//
-//        return true;
-//    }
+    public boolean saveReviewForDelegate(Long ownerId, Integer taskId, Integer taskSate, ReviewState result){
+        int count;
+        ReviewTask reviewTask = new ReviewTask();
+        reviewTask.setResult(result);
+
+        UpdateWrapper<ReviewTask> reviewTaskUpdateWrapper = new UpdateWrapper<>();
+        reviewTaskUpdateWrapper.eq("owner_id", ownerId);
+        reviewTaskUpdateWrapper.eq("out_task_id", taskId);
+        reviewTaskUpdateWrapper.eq("out_task_state", taskSate);
+        reviewTaskUpdateWrapper.eq("is_active", 1);
+        count = reviewTaskMapper.update(reviewTask, reviewTaskUpdateWrapper);
+        log.info("任务ID【" + taskId + "】, 审核人【" + ownerId + "】，审核结果【" + result.getName() + "】，记录保存成功【" + count + "】");
+        assert count==1?true:false;
+
+        //检查审核是否全部结束
+        QueryWrapper<ReviewTask> reviewTaskQueryWrapper = new QueryWrapper<>();
+        reviewTaskQueryWrapper.eq("owner_id", ownerId);
+        reviewTaskQueryWrapper.eq("out_task_id", taskId);
+        reviewTaskQueryWrapper.ne("out_task_state", ReviewState.REVIEW_PASS);
+        reviewTaskUpdateWrapper.eq("is_active", 1);
+        count = reviewTaskMapper.selectCount(reviewTaskQueryWrapper);
+        log.info("任务ID【" + taskId + "】审核未到通过的数量为【" + count + "】");
+
+        if(count!=0){
+            return true;
+        }
+
+        //把委托任务下的审核状态置为关闭，方便流程跳转。
+        DelegateTask delegateTask = new DelegateTask();
+        delegateTask.setReviewState(ReviewState.CLOSE);
+        QueryWrapper<DelegateTask> delegateTaskQueryWrapper = new QueryWrapper<>();
+        delegateTaskQueryWrapper.eq("flow_task_id", taskId);
+        count = delegateTaskMapper.update(delegateTask, delegateTaskQueryWrapper);
+        log.info("任务ID【" + taskId + "】, 更新委托任务审核为成功【" + count + "】");
+        assert count==1?true:false;
+        return true;
+    }
 }

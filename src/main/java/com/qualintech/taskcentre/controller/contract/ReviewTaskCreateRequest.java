@@ -1,8 +1,7 @@
 package com.qualintech.taskcentre.controller.contract;
 
-import com.qualintech.taskcentre.enums.TaskType;
 import lombok.Data;
-
+import javax.validation.constraints.NotNull;
 import java.util.List;
 
 /**
@@ -13,5 +12,8 @@ public class ReviewTaskCreateRequest {
     private List<Long> ownerId;
     private Integer taskId;
     private Integer taskType;
-    private Integer taskSate;
+//    @NotNull
+//    private Integer taskState;
+    @NotNull
+    private String status;
 }

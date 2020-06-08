@@ -3,7 +3,7 @@ package com.qualintech.taskcentre.statemachine;
 import com.qualintech.taskcentre.entity.Order;
 import com.qualintech.taskcentre.enums.OrderEvent;
 import com.qualintech.taskcentre.enums.OrderState;
-import com.qualintech.taskcentre.service.IOrderService;
+import com.qualintech.taskcentre.service.impl.OrderServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationContext;
 import org.squirrelframework.foundation.fsm.impl.AbstractStateMachine;
@@ -20,7 +20,7 @@ public class OrderStateMachine extends AbstractStateMachine<OrderStateMachine, O
     @Override
     protected void afterTransitionCompleted(OrderState fromState, OrderState toState, OrderEvent event, Order order) {
             order.setState(toState);
-            IOrderService orderService = applicationContext.getBean(IOrderService.class);
+            OrderServiceImpl orderService = applicationContext.getBean(OrderServiceImpl.class);
             orderService.updateById(order);
     }
 }

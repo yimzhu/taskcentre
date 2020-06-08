@@ -1,12 +1,14 @@
-package com.qualintech.taskcentre.domain;
+package com.qualintech.taskcentre.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.qualintech.taskcentre.entity.DelegateTask;
 import com.qualintech.taskcentre.entity.FlowTask;
 import com.qualintech.taskcentre.entity.TransferHistory;
 import com.qualintech.taskcentre.enums.DelegateState;
 import com.qualintech.taskcentre.enums.Module;
+import com.qualintech.taskcentre.mapper.DelegateTaskMapper;
 import com.qualintech.taskcentre.service.IFlowTaskService;
 import com.qualintech.taskcentre.service.IDelegateTaskService;
 import com.qualintech.taskcentre.service.ITransferHistoryTaskService;
@@ -18,7 +20,7 @@ import java.time.ZonedDateTime;
  * @author yimzhu
  */
 @Slf4j
-public class DelegateTaskService {
+public class DelegateTaskServiceImpl extends ServiceImpl<DelegateTaskMapper,DelegateTask> {
     @Autowired
     private IDelegateTaskService iDelegateTaskService;
 

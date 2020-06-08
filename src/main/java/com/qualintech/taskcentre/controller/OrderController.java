@@ -3,8 +3,7 @@ package com.qualintech.taskcentre.controller;
 import com.qualintech.taskcentre.entity.Order;
 import com.qualintech.taskcentre.enums.OrderEvent;
 import com.qualintech.taskcentre.enums.OrderState;
-import com.qualintech.taskcentre.mapper.OrderMapper;
-import com.qualintech.taskcentre.service.IOrderService;
+import com.qualintech.taskcentre.service.impl.OrderServiceImpl;
 import com.qualintech.taskcentre.statemachine.OrderStateMachineEngine;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -14,10 +13,7 @@ import org.springframework.web.bind.annotation.*;
 public class OrderController {
 
     @Autowired
-    private IOrderService orderService;
-
-    @Autowired
-    private OrderMapper orderMapper;
+    private OrderServiceImpl orderService;
 
     @Autowired
     private OrderStateMachineEngine orderStateMachineEngine;
@@ -25,13 +21,6 @@ public class OrderController {
 
     @GetMapping("/{id}")
     public Order getOrder(@PathVariable long id) {
-//        System.out.print(orderService.getById(id).getState().getName());
-//        Order order = new Order();
-//        order.setId(6L);
-//        QueryWrapper<Order> queryWrapper = new QueryWrapper<>(order);
-//        Order order1 = orderMapper.selectOne(queryWrapper);
-//        System.out.print(order1.getState().getName());
-
         return orderService.getById(id);
     }
 
@@ -51,7 +40,7 @@ public class OrderController {
     }
 
     @GetMapping("/{id}/refund")
-    public Order orderRefund(@PathVariable long id) throws Exception {
+    public Order orderRefund(@PathVariable long id) {
         Order order = orderService.getById(id);
         orderStateMachineEngine.fire(order.getState(), OrderEvent.REFUND_SUCCESS, order);
         return order;

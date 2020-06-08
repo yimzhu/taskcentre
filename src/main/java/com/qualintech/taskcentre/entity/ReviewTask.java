@@ -31,19 +31,19 @@ public class ReviewTask {
      * Task State
      */
     @TableField(value = "out_task_state")
-    private Integer taskState;
+    private Integer outTaskState;
 
     /**
      * Task ID
      */
     @TableField(value = "out_task_id")
-    private Integer taskId;
+    private Integer outTaskId;
 
     /**
      * Task Type, 0-flow task, 1-delegate task
      */
     @TableField(value = "out_task_type")
-    private Integer taskType;
+    private Integer outTaskType;
 
     /**
      * Module 模型
