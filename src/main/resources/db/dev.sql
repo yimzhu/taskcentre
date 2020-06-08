@@ -66,6 +66,7 @@ CREATE TABLE `review_task` (
   `out_task_id` int(11) NOT NULL COMMENT '任务ID',
   `out_task_state` int(255) DEFAULT NULL COMMENT '任务状态',
   `owner_id` bigint(20) NOT NULL COMMENT '审核人',
+  `result` int(11) DEFAULT NULL COMMENT '审核结果',
   `insert_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `complete_time` datetime DEFAULT NULL COMMENT '审核时间',
   `overdue_time` datetime DEFAULT NULL COMMENT '逾期时间',

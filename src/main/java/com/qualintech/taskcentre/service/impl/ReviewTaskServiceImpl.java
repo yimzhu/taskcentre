@@ -1,6 +1,5 @@
 package com.qualintech.taskcentre.service.impl;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -33,17 +32,17 @@ public class ReviewTaskServiceImpl extends ServiceImpl<ReviewTaskMapper, ReviewT
     @Autowired
     private ReviewTaskMapper reviewTaskMapper;
 
+    private int count;
+
     /**
      * 创建审核任务
      * @param ownerIds 审核人列表
      * @param taskId 上一级任务ID
      * @param taskType 上一级任务类型，0-flow task, 1-delegate task
-     * @param taskSate 上一级任务状态
+     * @param taskState 上一级任务状态
      * @return
      */
-    public boolean create(List<Long> ownerIds, Integer taskId, Integer taskType, Integer taskSate){
-        int count;
-
+    public boolean create(List<Long> ownerIds, Integer taskId, Integer taskType, Integer taskState){
         if(taskType.equals(TaskType.FLOW.getCode())) {
             //设置主任务中对应任务的审核状态为0-开启，1-关闭
             FlowTask flowTask = new FlowTask();
@@ -74,7 +73,8 @@ public class ReviewTaskServiceImpl extends ServiceImpl<ReviewTaskMapper, ReviewT
 
         ReviewTask reviewTask = new ReviewTask();
         reviewTask.setOutTaskId(taskId);
-        reviewTask.setOutTaskState(taskSate);
+        reviewTask.setOutTaskState(taskState);
+        reviewTask.setOutTaskType(taskType);
         for(Long ownerId:ownerIds){
             reviewTask.setOwnerId(ownerId);
             count = reviewTaskMapper.insert(reviewTask);
@@ -88,31 +88,25 @@ public class ReviewTaskServiceImpl extends ServiceImpl<ReviewTaskMapper, ReviewT
      *  保存流程任务下的审核结果
      * @param ownerId 审核人
      * @param taskId 任务ID
-     * @param taskSate 任务状态
+     * @param module 流程任务类型，来料，NCR等
+     * @param taskState 流程任务状态
+     * @param result 审核结论
      */
-    public boolean saveReviewForFlow(Long ownerId, Integer taskId, Module module, Integer taskSate, ReviewState result){
-        int count;
+    public boolean saveReviewForFlow(Long ownerId, Integer taskId, Module module, Integer taskState, ReviewState result){
         ReviewTask reviewTask = new ReviewTask();
         reviewTask.setResult(result);
 
         UpdateWrapper<ReviewTask> reviewTaskUpdateWrapper = new UpdateWrapper<>();
         reviewTaskUpdateWrapper.eq("owner_id", ownerId);
         reviewTaskUpdateWrapper.eq("out_task_id", taskId);
-        reviewTaskUpdateWrapper.eq("out_task_state", taskSate);
+        reviewTaskUpdateWrapper.eq("out_task_state", taskState);
         reviewTaskUpdateWrapper.eq("is_active", 1);
 
         count = reviewTaskMapper.update(reviewTask, reviewTaskUpdateWrapper);
         log.info("任务ID【" + taskId + "】, 审核人【" + ownerId + "】，审核结果【" + result.getName() + "】，记录保存成功数量【" + count + "】");
 
         //检查审核是否全部通过
-        QueryWrapper<ReviewTask> reviewTaskQueryWrapper = new QueryWrapper<>();
-        reviewTaskQueryWrapper.eq("owner_id", ownerId);
-        reviewTaskQueryWrapper.eq("out_task_id", taskId);
-        reviewTaskQueryWrapper.ne("out_task_state", ReviewState.REVIEW_PASS);
-        reviewTaskUpdateWrapper.eq("is_active", 1);
-        count = reviewTaskMapper.selectCount(reviewTaskQueryWrapper);
-        log.info("任务ID【" + taskId + "】审核未到通过的数量为【" + count + "】");
-
+        count = queryInCompleteCount(ownerId, taskId, taskState);
         if(count!=0){
             return true;
         }
@@ -132,31 +126,24 @@ public class ReviewTaskServiceImpl extends ServiceImpl<ReviewTaskMapper, ReviewT
      *  保存委托任务下的审核结果
      * @param ownerId 审核人
      * @param taskId 任务ID
-     * @param taskSate 任务状态
+     * @param taskState 流程任务状态
+     * @param result 审核结果
      */
-    public boolean saveReviewForDelegate(Long ownerId, Integer taskId, Integer taskSate, ReviewState result){
-        int count;
+    public boolean saveReviewForDelegate(Long ownerId, Integer taskId, Integer taskState, ReviewState result){
         ReviewTask reviewTask = new ReviewTask();
         reviewTask.setResult(result);
 
         UpdateWrapper<ReviewTask> reviewTaskUpdateWrapper = new UpdateWrapper<>();
         reviewTaskUpdateWrapper.eq("owner_id", ownerId);
         reviewTaskUpdateWrapper.eq("out_task_id", taskId);
-        reviewTaskUpdateWrapper.eq("out_task_state", taskSate);
+        reviewTaskUpdateWrapper.eq("out_task_state", taskState);
         reviewTaskUpdateWrapper.eq("is_active", 1);
         count = reviewTaskMapper.update(reviewTask, reviewTaskUpdateWrapper);
         log.info("任务ID【" + taskId + "】, 审核人【" + ownerId + "】，审核结果【" + result.getName() + "】，记录保存成功【" + count + "】");
         assert count==1?true:false;
 
         //检查审核是否全部结束
-        QueryWrapper<ReviewTask> reviewTaskQueryWrapper = new QueryWrapper<>();
-        reviewTaskQueryWrapper.eq("owner_id", ownerId);
-        reviewTaskQueryWrapper.eq("out_task_id", taskId);
-        reviewTaskQueryWrapper.ne("out_task_state", ReviewState.REVIEW_PASS);
-        reviewTaskUpdateWrapper.eq("is_active", 1);
-        count = reviewTaskMapper.selectCount(reviewTaskQueryWrapper);
-        log.info("任务ID【" + taskId + "】审核未到通过的数量为【" + count + "】");
-
+        count = queryInCompleteCount(ownerId, taskId, taskState);
         if(count!=0){
             return true;
         }
@@ -170,5 +157,23 @@ public class ReviewTaskServiceImpl extends ServiceImpl<ReviewTaskMapper, ReviewT
         log.info("任务ID【" + taskId + "】, 更新委托任务审核为成功【" + count + "】");
         assert count==1?true:false;
         return true;
+    }
+
+    /**
+     * 检查审核是否全部通过
+     * @param ownerId
+     * @param taskId
+     * @param taskState
+     * @return
+     */
+    public int queryInCompleteCount(Long ownerId, Integer taskId, Integer taskState){
+        QueryWrapper<ReviewTask> reviewTaskQueryWrapper = new QueryWrapper<>();
+        reviewTaskQueryWrapper.eq("owner_id", ownerId);
+        reviewTaskQueryWrapper.eq("out_task_id", taskId);
+        reviewTaskQueryWrapper.eq("out_task_state", taskState);
+        reviewTaskQueryWrapper.ne("result", ReviewState.REVIEW_PASS);
+        int count = reviewTaskMapper.selectCount(reviewTaskQueryWrapper);
+        log.info("任务ID【" + taskId + "】审核未到通过的数量为【" + count + "】");
+        return count;
     }
 }

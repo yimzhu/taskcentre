@@ -1,12 +1,12 @@
 package com.qualintech.taskcentre.controller;
 
+import com.qualintech.taskcentre.controller.contract.QueryReviewIfAllPassRequest;
 import com.qualintech.taskcentre.controller.contract.ReviewTaskCreateRequest;
 import com.qualintech.taskcentre.controller.contract.ReviewTaskSaveResultRequest;
 import com.qualintech.taskcentre.enums.TaskType;
 import com.qualintech.taskcentre.service.impl.ReviewTaskServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.validation.Valid;
 
 @RestController
-//@RequestMapping("/review")
+@RequestMapping("/review")
 @Slf4j
 public class ReviewController {
 
@@ -24,34 +24,25 @@ public class ReviewController {
 
     @PostMapping("/create")
     public void createReview(@RequestBody @Valid ReviewTaskCreateRequest request) {
-        System.out.println(request.toString());
-        System.out.println(111);
-
-
-        System.out.println(222);
-//        reviewTaskService.create(request.getOwnerId(),request.getTaskId(),request.getTaskType(),request.getTaskState());
+        reviewTaskService.create(request.getOwnerId(),request.getTaskId(),request.getTaskType(),request.getTaskState());
     }
 
     @PostMapping("/save/result")
-    public Boolean saveReviewForFlow(@Valid @RequestBody ReviewTaskSaveResultRequest request) {
+    public Boolean saveReviewForFlow(@RequestBody @Valid ReviewTaskSaveResultRequest request) {
         if(request.getModule()!=null){
-            log.info("Á÷³ÌÈÎÎñ¡¾" + request.getModule().getName() + "¡¿ÉóºË...");
-            //Á÷³ÌÈÎÎñµÄÉóºË×´Ì¬±£´æ£¬module²»Îª¿Õ£¬tasktypeÎª0-flow
+            log.info("æµç¨‹ä»»åŠ¡ã€" + request.getModule().getName() + "ã€‘ä¿å­˜å®¡æ ¸è®°å½•");
             assert request.getTaskType() == TaskType.FLOW.getCode();
-            return reviewTaskService.saveReviewForFlow(request.getOwnerId(), request.getTaskId(), request.getModule(), request.getTaskSate(), request.getReviewState());
+            return reviewTaskService.saveReviewForFlow(request.getOwnerId(), request.getTaskId(), request.getModule(), request.getTaskState(), request.getReviewState());
         }else{
-            log.info("Î¯ÍĞÈÎÎñ[" + request.getModule().getName() + "]ÉóºË...");
-            //Î¯ÍĞÈÎÎñµÄÉóºË×´Ì¬±£´æ£¬moduleÎª¿Õ£¬TasktypeÎª1-delegate
-            return reviewTaskService.saveReviewForDelegate(request.getOwnerId(), request.getTaskId(), request.getTaskSate(), request.getReviewState());
+            log.info("å§”æ‰˜ä»»åŠ¡ã€" + request.getModule().getName() + "ã€‘ä¿å­˜å®¡æ ¸è®°å½•");
+            return reviewTaskService.saveReviewForDelegate(request.getOwnerId(), request.getTaskId(), request.getTaskState(), request.getReviewState());
         }
     }
 
-//    @GetMapping("/{id}/refund")
-//    public Material materialRefund(@PathVariable long id) throws Exception {
-//        Material material = materialService.getById(id);
-//        materialStateMachineEngine.fire(material.getState(), OrderEvent.DELIVER, material);
-//        return order;
-//    }
+    @PostMapping("/query/incomplete")
+    public int queryIsReviewAllPass(@RequestBody @Valid QueryReviewIfAllPassRequest request) throws Exception {
+        return reviewTaskService.queryInCompleteCount(request.getOwnerId(),request.getTaskId(),request.getTaskState());
+    }
 
 
 }
