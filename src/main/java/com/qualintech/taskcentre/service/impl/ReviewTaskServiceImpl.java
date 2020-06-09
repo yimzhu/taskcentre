@@ -75,6 +75,7 @@ public class ReviewTaskServiceImpl extends ServiceImpl<ReviewTaskMapper, ReviewT
         reviewTask.setOutTaskId(taskId);
         reviewTask.setOutTaskState(taskState);
         reviewTask.setOutTaskType(taskType);
+        reviewTask.setResult(ReviewState.IN_REVIEW);
         for(Long ownerId:ownerIds){
             reviewTask.setOwnerId(ownerId);
             count = reviewTaskMapper.insert(reviewTask);
@@ -97,16 +98,16 @@ public class ReviewTaskServiceImpl extends ServiceImpl<ReviewTaskMapper, ReviewT
         reviewTask.setResult(result);
 
         UpdateWrapper<ReviewTask> reviewTaskUpdateWrapper = new UpdateWrapper<>();
-        reviewTaskUpdateWrapper.eq("owner_id", ownerId);
-        reviewTaskUpdateWrapper.eq("out_task_id", taskId);
-        reviewTaskUpdateWrapper.eq("out_task_state", taskState);
-        reviewTaskUpdateWrapper.eq("is_active", 1);
+        reviewTaskUpdateWrapper.and(i->i.eq("owner_id", ownerId)
+                .eq("out_task_id", taskId)
+                .eq("out_task_state", taskState)
+                .eq("is_active", 1));
 
         count = reviewTaskMapper.update(reviewTask, reviewTaskUpdateWrapper);
         log.info("任务ID【" + taskId + "】, 审核人【" + ownerId + "】，审核结果【" + result.getName() + "】，记录保存成功数量【" + count + "】");
 
         //检查审核是否全部通过
-        count = queryInCompleteCount(ownerId, taskId, taskState);
+        count = queryReviewCount(ownerId, taskId, taskState,0);
         if(count!=0){
             return true;
         }
@@ -114,8 +115,8 @@ public class ReviewTaskServiceImpl extends ServiceImpl<ReviewTaskMapper, ReviewT
         FlowTask flowTask = new FlowTask();
         flowTask.setReviewState(ReviewState.CLOSE);
         QueryWrapper<FlowTask> materialQueryWrapper = new QueryWrapper<>();
-        materialQueryWrapper.eq("module", module);
-        materialQueryWrapper.eq("id", taskId);
+        materialQueryWrapper.and(i->i.eq("module", module)
+                .eq("id", taskId));
         count = flowTaskMapper.update(flowTask, materialQueryWrapper);
         log.info("任务ID【" + taskId + "】, 更新流程任务审核为成功【" + count + "】");
         assert count==1?true:false;
@@ -134,17 +135,18 @@ public class ReviewTaskServiceImpl extends ServiceImpl<ReviewTaskMapper, ReviewT
         reviewTask.setResult(result);
 
         UpdateWrapper<ReviewTask> reviewTaskUpdateWrapper = new UpdateWrapper<>();
-        reviewTaskUpdateWrapper.eq("owner_id", ownerId);
-        reviewTaskUpdateWrapper.eq("out_task_id", taskId);
-        reviewTaskUpdateWrapper.eq("out_task_state", taskState);
-        reviewTaskUpdateWrapper.eq("is_active", 1);
+        reviewTaskUpdateWrapper.and(i->i.eq("owner_id", ownerId)
+                .eq("out_task_id", taskId)
+                .eq("out_task_state", taskState)
+                .eq("is_active", 1));
         count = reviewTaskMapper.update(reviewTask, reviewTaskUpdateWrapper);
         log.info("任务ID【" + taskId + "】, 审核人【" + ownerId + "】，审核结果【" + result.getName() + "】，记录保存成功【" + count + "】");
         assert count==1?true:false;
 
         //检查审核是否全部结束
-        count = queryInCompleteCount(ownerId, taskId, taskState);
+        count = queryReviewCount(ownerId, taskId, taskState,0);
         if(count!=0){
+            log.info("任务ID【" + taskId + "】的审核流未结束，本次结果已保存。");
             return true;
         }
 
@@ -160,20 +162,57 @@ public class ReviewTaskServiceImpl extends ServiceImpl<ReviewTaskMapper, ReviewT
     }
 
     /**
-     * 检查审核是否全部通过
+     * 查询审核状态（未通过，通过）的数量
      * @param ownerId
      * @param taskId
      * @param taskState
+     * @param result 0-未通过（失败+待审核） 1-通过
      * @return
      */
-    public int queryInCompleteCount(Long ownerId, Integer taskId, Integer taskState){
-        QueryWrapper<ReviewTask> reviewTaskQueryWrapper = new QueryWrapper<>();
-        reviewTaskQueryWrapper.eq("owner_id", ownerId);
-        reviewTaskQueryWrapper.eq("out_task_id", taskId);
-        reviewTaskQueryWrapper.eq("out_task_state", taskState);
-        reviewTaskQueryWrapper.ne("result", ReviewState.REVIEW_PASS);
-        int count = reviewTaskMapper.selectCount(reviewTaskQueryWrapper);
-        log.info("任务ID【" + taskId + "】审核未到通过的数量为【" + count + "】");
+    public int queryReviewCount(Long ownerId, Integer taskId, Integer taskState, Integer result){
+        if(result.equals(0)){
+            QueryWrapper<ReviewTask> reviewTaskQueryWrapper = new QueryWrapper<>();
+            reviewTaskQueryWrapper.and(i->i.eq("out_task_id", taskId)
+                    .eq("out_task_state", taskState)
+                    .ne("result", ReviewState.REVIEW_PASS)
+                    .eq("is_active",1));
+            count = reviewTaskMapper.selectCount(reviewTaskQueryWrapper);
+            log.info("任务ID【" + taskId + "】审核未通过的数量为【" + count + "】");
+        }else if(result.equals(1)){
+            QueryWrapper<ReviewTask> reviewTaskQueryWrapper = new QueryWrapper<>();
+            reviewTaskQueryWrapper.and(i->i.eq("out_task_id", taskId)
+                    .eq("out_task_state", taskState)
+                    .eq("result", ReviewState.REVIEW_PASS)
+                    .eq("is_active",1));
+            count = reviewTaskMapper.selectCount(reviewTaskQueryWrapper);
+            log.info("任务ID【" + taskId + "】审核通过的数量为【" + count + "】");
+        }
         return count;
+    }
+
+    /**
+     * 查询审核状态（未通过，通过）的数量
+     * @param ownerId
+     * @param taskId
+     * @param taskState
+     * @param result 0-未通过（失败+待审核） 1-通过
+     * @return
+     */
+    public List<ReviewTask> queryReviewRecords(Long ownerId, Integer taskId, Integer taskState, Integer result){
+        List<ReviewTask> list = null;
+        if(result.equals(0)){
+            QueryWrapper<ReviewTask> reviewTaskQueryWrapper = new QueryWrapper<>();
+            reviewTaskQueryWrapper.and(i->i.eq("out_task_id", taskId)
+                    .eq("out_task_state", taskState)
+                    .ne("result", ReviewState.REVIEW_PASS));
+            list = reviewTaskMapper.selectList(reviewTaskQueryWrapper);
+        }else if(result.equals(1)){
+            QueryWrapper<ReviewTask> reviewTaskQueryWrapper = new QueryWrapper<>();
+            reviewTaskQueryWrapper.and(i->i.eq("out_task_id", taskId)
+                    .eq("out_task_state", taskState)
+                    .eq("result", ReviewState.REVIEW_PASS));
+            list = reviewTaskMapper.selectList(reviewTaskQueryWrapper);
+        }
+        return list;
     }
 }

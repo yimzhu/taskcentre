@@ -34,7 +34,7 @@ public class MaterialReviewCheckCondition extends AnonymousCondition<Material> {
         QueryWrapper<Material> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("id", context.getId());
         queryWrapper.and(i->i.ne("review_state", ReviewState.CLOSE).eq("review_flag",1));
-        queryWrapper.or(i->i.eq("delegate_flag",1).ne("delegate_state", DelegateState.CLOSE));
+        queryWrapper.or(i->i.ne("delegate_state", DelegateState.CLOSE).eq("delegate_flag",1));
         int count = materialMapper.selectCount(queryWrapper);
         boolean result = count==0?true:false;
         log.info("来料任务【" + context.getId() + "】审核及委托任务完成条件校验结果："+result);

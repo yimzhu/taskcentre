@@ -3,10 +3,8 @@ package com.qualintech.taskcentre.statemachine;
 import com.qualintech.taskcentre.entity.Material;
 import com.qualintech.taskcentre.enums.MaterialEvent;
 import com.qualintech.taskcentre.enums.MaterialState;
-import com.qualintech.taskcentre.statemachine.actions.MeterialNodePassAction;
-import com.qualintech.taskcentre.statemachine.actions.OrderPaySuccessAction;
+import com.qualintech.taskcentre.statemachine.actions.MaterialNodePassAction;
 import com.qualintech.taskcentre.statemachine.conditions.MaterialReviewCheckCondition;
-import com.qualintech.taskcentre.statemachine.conditions.ReviewCheckCondition;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -38,7 +36,7 @@ public class MaterialStateMachineEngine implements ApplicationContextAware {
         stateMachineBuilder.externalTransition()
                 .from(MaterialState.INIT).to(MaterialState.PROCESSING).on(MaterialEvent.DISPATCH)
                 .when(applicationContext.getBean(MaterialReviewCheckCondition.class))
-                .perform(applicationContext.getBean(MeterialNodePassAction.class));
+                .perform(applicationContext.getBean(MaterialNodePassAction.class));
 
 //                .callMethod(MeterialNodePassAction);
 

@@ -16,6 +16,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice;
+import org.squirrelframework.foundation.exception.TransitionException;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
@@ -102,6 +103,16 @@ public class GlobalResponseBodyAdvice implements ResponseBodyAdvice<Object>{
     }
 
     /**
+     * 业务转换失败的处理
+     * @param ex
+     * @return
+     */
+    @ExceptionHandler(TransitionException.class)
+    public GlobalResponse handleTransitionException(TransitionException ex) {
+        return new GlobalResponse(GlobalResponse.TRANSITION_ERR.getCode(), ex.getMessage());
+    }
+
+    /**
      *
      * @param errors
      * @return
@@ -121,27 +132,3 @@ public class GlobalResponseBodyAdvice implements ResponseBodyAdvice<Object>{
         return null;
     }
 }
-
-    /**
-     *  这个方法表示对于哪些请求要执行beforeBodyWrite，返回true执行，返回false不执行
-     */
-//    @Override
-//    public boolean supports(MethodParameter returnType, Class converterType) {
-//        return true;
-//    }
-//
-//    /**
-//     * 处理响应的具体业务方法
-//     */
-//    @Override
-//    public Object beforeBodyWrite(Object body, MethodParameter returnType, MediaType selectedContentType, Class selectedConverterType, ServerHttpRequest request, ServerHttpResponse response) {
-//        if (body == null) {
-//            return GenericResponse.Success();
-//        }
-//        if (body instanceof GenericResponse) {
-//            return body;
-//        } else {
-//            return GenericResponse.Success(body);
-//        }
-//    }
-//}

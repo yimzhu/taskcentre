@@ -19,6 +19,8 @@ public enum ResultCode implements ICode {
     NULL(2001, "数据不存在"),
     /** 业务数据重复 */
     DUPLICATE(2002, "数据重复"),
+    /**状态转变失败 */
+    TRANSITION_ERR(2003, "状态转变失败"),
 
     /** 没有权限 */
     FORBIDDEN(9001, "没有权限"),

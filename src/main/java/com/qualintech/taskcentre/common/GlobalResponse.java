@@ -11,6 +11,8 @@ public class GlobalResponse<T> implements IResponse{
     public static final GlobalResponse FORBIDDEN = new GlobalResponse(ResultCode.FORBIDDEN);
     public static final GlobalResponse EXCEPTION = new GlobalResponse(ResultCode.EXCEPTION);
     public static final GlobalResponse PARAM_INVALID = new GlobalResponse(ResultCode.PARAM_INVALID);
+
+    public static final GlobalResponse TRANSITION_ERR = new GlobalResponse(ResultCode.TRANSITION_ERR);
     /**
      * 返回代码
      */

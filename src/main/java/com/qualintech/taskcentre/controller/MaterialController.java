@@ -3,18 +3,17 @@ package com.qualintech.taskcentre.controller;
 import com.qualintech.taskcentre.controller.contract.MaterialFlowTaskCreateRequest;
 import com.qualintech.taskcentre.entity.Material;
 import com.qualintech.taskcentre.enums.MaterialEvent;
-import com.qualintech.taskcentre.enums.MaterialState;
-import com.qualintech.taskcentre.mapper.MaterialMapper;
-import com.qualintech.taskcentre.service.IMaterialService;
 import com.qualintech.taskcentre.service.impl.MaterialServiceImpl;
 import com.qualintech.taskcentre.statemachine.MaterialStateMachineEngine;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+/**
+ * @author yimzhu
+ */
 @RestController
 @RequestMapping("material")
 public class MaterialController {
-
     @Autowired
     private MaterialServiceImpl materialService;
 
@@ -29,11 +28,7 @@ public class MaterialController {
 
     @PostMapping("")
     public Material create(@RequestBody MaterialFlowTaskCreateRequest request) {
-        Material material = new Material();
-        material.setOwnerId(request.getOwnerId());
-        material.setState(MaterialState.INIT);
-        materialService.save(material);
-        return material;
+        return materialService.create(request.getOwnerId());
     }
 
     @GetMapping("/{id}/dispatch")
