@@ -6,17 +6,25 @@ import lombok.Getter;
 @AllArgsConstructor
 @Getter
 public enum ResultCode implements ICode {
-    /*成功状态码*/
-    SUCCESS(00000, "成功"),
-    /*参数错误*/
-    PARAM_IS_INVAILD(10000, "参数无效"),
-    PARAM_IS_BLANK(10001, "参数为空"),
-    PARAM_TYPE_BIND_ERROR(10002, "参数类型错误"),
-    PARAM_NOT_COMPLETE(10003, "参数缺失"),
-    /*业务错误*/
-    RESPONSE_IS_BLANK(20000, "业务返回为空");
-//    RESPONSE_IS_BLANK(20001, "业务错误");
+    /** 操作成功 */
+    SUCCESS(1, "成功"),
 
-    public int code;
+    /** 参数缺失或不正确 */
+    PARAM_INVALID(-1, "参数缺失或不正确"),
+
+    /** 请求体格式不正确 */
+    PARAM_NOT_JSON(-2, "请求体非JSON"),
+
+    /** 业务数据不存在 */
+    NULL(2001, "数据不存在"),
+    /** 业务数据重复 */
+    DUPLICATE(2002, "数据重复"),
+
+    /** 没有权限 */
+    FORBIDDEN(9001, "没有权限"),
+    /** 系统发生异常 */
+    EXCEPTION(9999, "系统异常");
+
+    public Integer code;
     private String name;
 }

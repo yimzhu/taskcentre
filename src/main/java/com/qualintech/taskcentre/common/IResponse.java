@@ -8,5 +8,5 @@ import java.io.Serializable;
  * @author mart
  * @since 10/23/2010 3:00 PM
  */
-public interface Result extends Serializable {
+public interface IResponse extends Serializable {
 }

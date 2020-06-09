@@ -7,6 +7,7 @@ import com.qualintech.taskcentre.enums.TaskType;
 import com.qualintech.taskcentre.service.impl.ReviewTaskServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -17,14 +18,15 @@ import javax.validation.Valid;
 @RestController
 @RequestMapping("/review")
 @Slf4j
+@Validated // 注意！1) 如果想在参数中使用 @NotNull 这种注解校验，就必须在类上添加 @Validated；2) 如果方法中的参数是对象类型，则必须要在参数对象前面添加 @Validated
 public class ReviewController {
 
     @Autowired
     private ReviewTaskServiceImpl reviewTaskService;
 
     @PostMapping("/create")
-    public void createReview(@RequestBody @Valid ReviewTaskCreateRequest request) {
-        reviewTaskService.create(request.getOwnerId(),request.getTaskId(),request.getTaskType(),request.getTaskState());
+    public boolean createReview(@RequestBody @Validated ReviewTaskCreateRequest request) {
+        return reviewTaskService.create(request.getOwnerId(),request.getTaskId(),request.getTaskType(),request.getTaskState());
     }
 
     @PostMapping("/save/result")
@@ -43,6 +45,4 @@ public class ReviewController {
     public int queryIsReviewAllPass(@RequestBody @Valid QueryReviewIfAllPassRequest request) throws Exception {
         return reviewTaskService.queryInCompleteCount(request.getOwnerId(),request.getTaskId(),request.getTaskState());
     }
-
-
 }

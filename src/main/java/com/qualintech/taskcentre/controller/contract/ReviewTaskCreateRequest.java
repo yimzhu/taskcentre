@@ -16,6 +16,6 @@ public class ReviewTaskCreateRequest {
     private Integer taskId;
     @NotNull
     private Integer taskType;
-    @NotNull
+    @NotNull(message = "taskState不能为空")
     private Integer taskState;
 }
