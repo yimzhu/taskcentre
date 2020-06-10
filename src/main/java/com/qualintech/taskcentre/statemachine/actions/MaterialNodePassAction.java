@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.qualintech.taskcentre.entity.Material;
 import com.qualintech.taskcentre.enums.MaterialEvent;
 import com.qualintech.taskcentre.enums.MaterialState;
+import com.qualintech.taskcentre.mapper.MaterialMapper;
 import com.qualintech.taskcentre.service.impl.MaterialServiceImpl;
 import com.qualintech.taskcentre.statemachine.MaterialStateMachine;
 import lombok.extern.slf4j.Slf4j;
@@ -17,25 +18,17 @@ import org.squirrelframework.foundation.fsm.AnonymousAction;
 @Slf4j
 @Component
 public class MaterialNodePassAction extends AnonymousAction<MaterialStateMachine, MaterialState, MaterialEvent, Material> {
-
-    private final MaterialServiceImpl materialService;
-
-    public MaterialNodePassAction(MaterialServiceImpl materialService) {
-        this.materialService = materialService;
-    }
+    @Autowired
+    private MaterialServiceImpl service;
 
     @Override
-    public void execute(MaterialState materialState, MaterialState s1, MaterialEvent event, Material material, MaterialStateMachine materialStateMachine) {
-        //Ö´ĞĞÖØÖÃÎ¯ÍĞºÍÉóºË×´Ì¬£¬ÒÔ½øÈëÏÂÒ»¸öÁ÷³Ì
-        Material clearState = new Material();
-        clearState.setDelegateFlag(0);
-        clearState.setReviewFlag(0);
+    public void execute(MaterialState fromState, MaterialState toState, MaterialEvent event, Material material, MaterialStateMachine materialStateMachine) {
+        //æ‰§è¡Œé‡ç½®å§”æ‰˜å’Œå®¡æ ¸çŠ¶æ€ï¼Œä»¥è¿›å…¥ä¸‹ä¸€ä¸ªæµç¨‹
+        material.setReviewFlag(0);
+        material.setDelegateFlag(0);
         UpdateWrapper<Material> updateWrapper = new UpdateWrapper<>();
         updateWrapper.eq("id", material.getId());
-        boolean sqlResult = materialService.update(clearState,updateWrapper);
-        /** À´ÁÏÈÎÎñµÄÎ¯ÍĞºÍÉóºË×´Ì¬ÖØÖÃ½á¹û */
-        log.info("Reset delegate flag and review flag on material flow task:" + sqlResult);
-        assert sqlResult;
-
+        boolean sqlResult = service.update(material,updateWrapper);
+        log.info("æ¥æ–™ä»»åŠ¡çš„å§”æ‰˜å’Œå®¡æ ¸çŠ¶æ€é‡ç½®ç»“æœ:" + sqlResult);
     }
 }
