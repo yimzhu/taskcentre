@@ -28,7 +28,6 @@ public class FlowTaskServiceImpl extends ServiceImpl<FlowTaskMapper, FlowTask> {
     @Autowired
     private INcrService iNcrService;
 
-
     @Autowired
     private MaterialStateMachineEngine materialStateMachineEngine;
 
