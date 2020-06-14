@@ -13,14 +13,7 @@ import lombok.Getter;
 @AllArgsConstructor
 @Getter
 public enum MaterialState {
-    INIT(100,"待派发"),
-    PROCESSING(110,"处理中"),
-    DONE(120,"完成"),
-    AUDITING(130,"待审核"),
-    AUDIT_PASS(140,"审核通过"),
-    AUDIT_REJECT(150,"审核驳回"),
-    RECALLED(160,"已召回"),
-    OVERDUE(170,"逾期中");
+
 
     @JsonValue
     @EnumValue

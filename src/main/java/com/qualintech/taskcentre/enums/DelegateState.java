@@ -13,18 +13,13 @@ import lombok.Getter;
 @AllArgsConstructor
 @Getter
 public enum DelegateState {
-    /**
-     * 未完成
-     */
-    INCOMPLETE(1000,"未完成"),
-    /**
-     * 完成
-     */
-    COMPLETE(1010,"完成"),
-    /**
-     * 已转交
-     */
-    TRANSFERRED(1011,"已转交"),
+    INIT(100,"待派发"),
+    PROCESSING(110,"处理中"),
+    DONE(120,"完成"),
+    AUDITING(130,"待审核"),
+    AUDIT_PASS(140,"审核通过"),
+    AUDIT_REJECT(150,"审核驳回"),
+    RECALLED(160,"已召回"),
 
     /**
      * 初始化 (FLOW TASK ONLY)

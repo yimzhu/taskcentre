@@ -5,12 +5,10 @@ package com.qualintech.taskcentre.enums;
  */
 
 public enum DelegateEvent {
-    /**
-     * 完成
-     */
-    FINISH,
-    /**
-     * 转交任务
-     */
-    TRANSFER
+    DISPATCH,
+    COMPLETE_WITHOUT_AUDIT,
+    COMPLETE_WITH_AUDIT,
+    PASS_AUDIT,
+    REJECT_AUDIT,
+    RECALL;
 }
