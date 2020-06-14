@@ -3,7 +3,7 @@ package com.qualintech.taskcentre.statemachine;
 import com.qualintech.taskcentre.entity.Material;
 import com.qualintech.taskcentre.enums.MaterialEvent;
 import com.qualintech.taskcentre.enums.MaterialState;
-import com.qualintech.taskcentre.statemachine.actions.MaterialNodePassAction;
+import com.qualintech.taskcentre.statemachine.actions.DelegateNodePassAction;
 import com.qualintech.taskcentre.statemachine.conditions.MaterialReviewCheckCondition;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
@@ -37,67 +37,8 @@ public class MaterialStateMachineEngine implements ApplicationContextAware {
         stateMachineBuilder.externalTransition()
                 .from(MaterialState.INIT).to(MaterialState.PROCESSING).on(MaterialEvent.DISPATCH)
                 .when(applicationContext.getBean(MaterialReviewCheckCondition.class))
-                .perform(applicationContext.getBean(MaterialNodePassAction.class));
-        /** 处理中 >> 无审核 >> 已完成 */
-        stateMachineBuilder.externalTransition()
-                .from(MaterialState.PROCESSING).to(MaterialState.DONE).on(MaterialEvent.COMPLETE_WITHOUT_AUDIT)
-                .when(applicationContext.getBean(MaterialReviewCheckCondition.class))
-                .perform(applicationContext.getBean(MaterialNodePassAction.class));
-        /** 处理中 >> 有审核 >> 审核中 */
-        stateMachineBuilder.externalTransition()
-                .from(MaterialState.PROCESSING).to(MaterialState.AUDITING).on(MaterialEvent.COMPLETE_WITH_AUDIT)
-                .when(applicationContext.getBean(MaterialReviewCheckCondition.class))
-                .perform(applicationContext.getBean(MaterialNodePassAction.class));
-        /** 审核中 >> 审核通过 >> 审核通过 */
-        stateMachineBuilder.externalTransition()
-                .from(MaterialState.AUDITING).to(MaterialState.AUDIT_PASS).on(MaterialEvent.PASS_AUDIT)
-                .when(applicationContext.getBean(MaterialReviewCheckCondition.class))
-                .perform(applicationContext.getBean(MaterialNodePassAction.class));
-        /** 审核中 >> 审核驳回 >> 审核驳回 */
-        stateMachineBuilder.externalTransition()
-                .from(MaterialState.AUDITING).to(MaterialState.AUDIT_REJECT).on(MaterialEvent.REJECT_AUDIT)
-                .when(applicationContext.getBean(MaterialReviewCheckCondition.class))
-                .perform(applicationContext.getBean(MaterialNodePassAction.class));
-        /** 审核中 >> 审核通过 >> 审核通过 */
-        stateMachineBuilder.externalTransition()
-                .from(MaterialState.INIT).to(MaterialState.RECALLED).on(MaterialEvent.RECALL)
-                .when(applicationContext.getBean(MaterialReviewCheckCondition.class))
-                .perform(applicationContext.getBean(MaterialNodePassAction.class));
-        /** 待发送 >> 召回任务 >> 已召回 */
-        stateMachineBuilder.externalTransition()
-                .from(MaterialState.INIT).to(MaterialState.RECALLED).on(MaterialEvent.RECALL)
-                .when(applicationContext.getBean(MaterialReviewCheckCondition.class))
-                .perform(applicationContext.getBean(MaterialNodePassAction.class));
-        /** 处理中 >> 召回任务 >> 已召回 */
-        stateMachineBuilder.externalTransition()
-                .from(MaterialState.PROCESSING).to(MaterialState.RECALLED).on(MaterialEvent.RECALL)
-                .when(applicationContext.getBean(MaterialReviewCheckCondition.class))
-                .perform(applicationContext.getBean(MaterialNodePassAction.class));
-        /** 已完成 >> 召回任务 >> 已召回 */
-        stateMachineBuilder.externalTransition()
-                .from(MaterialState.DONE).to(MaterialState.RECALLED).on(MaterialEvent.RECALL)
-                .when(applicationContext.getBean(MaterialReviewCheckCondition.class))
-                .perform(applicationContext.getBean(MaterialNodePassAction.class));
-        /** 审核中 >> 召回任务 >> 已召回 */
-        stateMachineBuilder.externalTransition()
-                .from(MaterialState.AUDITING).to(MaterialState.RECALLED).on(MaterialEvent.RECALL)
-                .when(applicationContext.getBean(MaterialReviewCheckCondition.class))
-                .perform(applicationContext.getBean(MaterialNodePassAction.class));
-        /** 审核通过 >> 召回任务 >> 已召回 */
-        stateMachineBuilder.externalTransition()
-                .from(MaterialState.AUDIT_PASS).to(MaterialState.RECALLED).on(MaterialEvent.RECALL)
-                .when(applicationContext.getBean(MaterialReviewCheckCondition.class))
-                .perform(applicationContext.getBean(MaterialNodePassAction.class));
-        /** 审核驳回 >> 召回任务 >> 已召回 */
-        stateMachineBuilder.externalTransition()
-                .from(MaterialState.AUDIT_PASS).to(MaterialState.RECALLED).on(MaterialEvent.RECALL)
-                .when(applicationContext.getBean(MaterialReviewCheckCondition.class))
-                .perform(applicationContext.getBean(MaterialNodePassAction.class));
-        /** 逾期 >> 召回任务 >> 已召回 */
-        stateMachineBuilder.externalTransition()
-                .from(MaterialState.OVERDUE).to(MaterialState.RECALLED).on(MaterialEvent.RECALL)
-                .when(applicationContext.getBean(MaterialReviewCheckCondition.class))
-                .perform(applicationContext.getBean(MaterialNodePassAction.class));
+                .perform(applicationContext.getBean(DelegateNodePassAction.class));
+
     }
 
     @Override

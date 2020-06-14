@@ -6,14 +6,17 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 /**
- * 来料用1xx表示状态
+ * 来料的流程
  * @author yimzhu
  */
 
 @AllArgsConstructor
 @Getter
 public enum MaterialState {
-
+    BASIC_INFO(10,"基本信息"),
+    INSPECTION_RECORDS(20,"检验记录"),
+    CONCLUSION(30,"结论判定"),
+    FINAL_REVIEW(40,"终审");
 
     @JsonValue
     @EnumValue

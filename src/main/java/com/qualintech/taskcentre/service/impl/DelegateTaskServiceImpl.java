@@ -7,28 +7,34 @@ import com.qualintech.taskcentre.entity.DelegateTask;
 import com.qualintech.taskcentre.entity.FlowTask;
 import com.qualintech.taskcentre.entity.TransferHistory;
 import com.qualintech.taskcentre.enums.DelegateState;
+import com.qualintech.taskcentre.enums.DelegateType;
 import com.qualintech.taskcentre.enums.Module;
 import com.qualintech.taskcentre.mapper.DelegateTaskMapper;
+import com.qualintech.taskcentre.mapper.FlowTaskMapper;
 import com.qualintech.taskcentre.service.IFlowTaskService;
 import com.qualintech.taskcentre.service.IDelegateTaskService;
 import com.qualintech.taskcentre.service.ITransferHistoryTaskService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import sun.instrument.TransformerManager;
+
 import java.time.ZonedDateTime;
 
 /**
  * @author yimzhu
  */
 @Slf4j
+@Service
 public class DelegateTaskServiceImpl extends ServiceImpl<DelegateTaskMapper,DelegateTask> {
     @Autowired
-    private IDelegateTaskService iDelegateTaskService;
+    private DelegateTaskMapper delegateTaskMapper;
 
     @Autowired
-    private IFlowTaskService iFlowTaskService;
+    private FlowTaskMapper flowTaskMapper;
 
     @Autowired
-    private ITransferHistoryTaskService iTransferHistoryTaskService;
+    private TransferHistory iTransferHistoryTaskService;
 
     /**
      * 创建委托任务
@@ -43,22 +49,22 @@ public class DelegateTaskServiceImpl extends ServiceImpl<DelegateTaskMapper,Dele
         flowTask.setDelegateState(DelegateState.CLOSE);
         flowTask.setDelegateFlag(1);
 
-        boolean sqlResult;
+        int sqlResult;
 
         UpdateWrapper<FlowTask> updateWrapper = new UpdateWrapper<>();
         updateWrapper.eq("id",taskId);
-        sqlResult = iFlowTaskService.update(flowTask,updateWrapper);
+        sqlResult = flowTaskMapper.update(flowTask,updateWrapper);
         log.info("初始化流程任务[" + taskId + "]的审核状态：" + sqlResult);
-        assert sqlResult;
+        assert sqlResult!=0?true:false;
 
         DelegateTask delegateTask = new DelegateTask();
 //        ZonedDateTime zonedDateTime = ZonedDateTime.now();
         delegateTask.setFlowTaskId(taskId);
         delegateTask.setOwnerId(ownerId);
-        delegateTask.setState(DelegateState.INCOMPLETE);
-        sqlResult = iDelegateTaskService.save(delegateTask);
+        delegateTask.setState(DelegateState.INIT);
+        sqlResult = delegateTaskMapper.insert(delegateTask);
         log.info("委托任务已创建，委托任务ID【"+delegateTask.getId()+"】, 委托人【"+ownerId+"】");
-        assert sqlResult;
+        assert sqlResult!=0?true:false;
 
         return delegateTask.getId();
     }
@@ -69,27 +75,33 @@ public class DelegateTaskServiceImpl extends ServiceImpl<DelegateTaskMapper,Dele
      * @param flowTaskId 任务ID
      * @param delegateState 任务状态
      */
-    public boolean save(Long ownerId, Long flowTaskId, Integer module, DelegateState delegateState){
+    public boolean save(Long ownerId, Long delegateTaskId, Long flowTaskId, DelegateType type, DelegateState delegateState){
+        int result;
         //更新委托任务的状态
         UpdateWrapper<DelegateTask> delegateTaskUpdateWrapper = new UpdateWrapper<>();
         delegateTaskUpdateWrapper.eq("is_active",1);
         delegateTaskUpdateWrapper.eq("flow_task_id", flowTaskId);
         delegateTaskUpdateWrapper.eq("owner_id", ownerId);
-        iDelegateTaskService.update(DelegateTask.builder().state(delegateState).build(), delegateTaskUpdateWrapper);
+        result = delegateTaskMapper.update(DelegateTask.builder().state(delegateState).build(), delegateTaskUpdateWrapper);
+        assert result!=0?true:false;
 
         //查询是否还有委托未到终态的委托任务
         QueryWrapper<DelegateTask> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("is_active",1);
+        queryWrapper.eq("id", delegateTaskId);
         queryWrapper.eq("flow_task_id", flowTaskId);
-        queryWrapper.eq("state", DelegateState.INCOMPLETE);
-        int count = iDelegateTaskService.count(queryWrapper);
+        queryWrapper.eq("module", type);
+        queryWrapper.or(i->i.eq("state", DelegateState.RECALLED)
+                .eq("state", DelegateState.DONE)
+                .eq("state", DelegateState.AUDIT_PASS));
+        int count = delegateTaskMapper.selectCount(queryWrapper);
 
         //如没有则更新FlowTask的委托状态, 给状态机做状态跳转判断用
         if(count==0){
             UpdateWrapper<FlowTask> flowTaskUpdateWrapper = new UpdateWrapper<>();
             flowTaskUpdateWrapper.eq("is_active",1);
             flowTaskUpdateWrapper.eq("id", flowTaskId);
-            iFlowTaskService.update(FlowTask.builder().delegateState(DelegateState.CLOSE).build(),flowTaskUpdateWrapper);
+            flowTaskMapper.update(FlowTask.builder().delegateState(DelegateState.CLOSE).build(),flowTaskUpdateWrapper);
         }
         return true;
     }

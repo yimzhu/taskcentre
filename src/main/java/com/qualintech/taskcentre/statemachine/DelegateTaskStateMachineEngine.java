@@ -1,8 +1,14 @@
 package com.qualintech.taskcentre.statemachine;
 
+import com.qualintech.taskcentre.entity.DelegateTask;
 import com.qualintech.taskcentre.entity.ReviewTask;
+import com.qualintech.taskcentre.enums.DelegateEvent;
+import com.qualintech.taskcentre.enums.DelegateState;
 import com.qualintech.taskcentre.enums.ReviewEvent;
 import com.qualintech.taskcentre.enums.ReviewState;
+import com.qualintech.taskcentre.statemachine.actions.DelegateNodePassAction;
+import com.qualintech.taskcentre.statemachine.conditions.DelegateReviewCheckCondition;
+import com.qualintech.taskcentre.statemachine.conditions.MaterialReviewCheckCondition;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -20,13 +26,13 @@ import org.squirrelframework.foundation.fsm.StateMachineBuilderFactory;
  */
 @Service
 public class DelegateTaskStateMachineEngine implements ApplicationContextAware {
-    private StateMachineBuilder<DelegateTaskStateMachine, ReviewState, ReviewEvent, ReviewTask> stateMachineBuilder;
+    private StateMachineBuilder<DelegateTaskStateMachine, DelegateState, DelegateEvent, DelegateTask> stateMachineBuilder;
 
     private ApplicationContext applicationContext;
 
     public DelegateTaskStateMachineEngine() {
         //OrderStateMachineEngine 本身为 一个 service, 即间接实现了 stateMachineBuilder 的单例
-        stateMachineBuilder = StateMachineBuilderFactory.create(DelegateTaskStateMachine.class, ReviewState.class, ReviewEvent.class, ReviewTask.class, ApplicationContext.class);
+        stateMachineBuilder = StateMachineBuilderFactory.create(DelegateTaskStateMachine.class, DelegateState.class, DelegateEvent.class, DelegateTask.class, ApplicationContext.class);
     }
 
     /**
@@ -35,9 +41,9 @@ public class DelegateTaskStateMachineEngine implements ApplicationContextAware {
      */
     protected void configBuilder() {
         stateMachineBuilder.externalTransition()
-                .from(ReviewState.IN_REVIEW).to(ReviewState.REVIEW_PASS).on(ReviewEvent.PASS);
-//                .when(applicationContext.getBean(ReviewCheckCondition.class));
-
+                .from(DelegateState.INIT).to(DelegateState.PROCESSING).on(DelegateEvent.DISPATCH)
+                .when(applicationContext.getBean(DelegateReviewCheckCondition.class))
+                .perform(applicationContext.getBean(DelegateNodePassAction.class));
         stateMachineBuilder.externalTransition()
                 .from(ReviewState.IN_REVIEW).to(ReviewState.REVIEW_FAIL).on(ReviewEvent.REJECT);
 //                .when(applicationContext.getBean(ReviewCheckCondition.class));

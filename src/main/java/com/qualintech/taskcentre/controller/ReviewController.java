@@ -4,7 +4,6 @@ import com.qualintech.taskcentre.controller.contract.QueryReviewResultRequest;
 import com.qualintech.taskcentre.controller.contract.ReviewTaskCreateRequest;
 import com.qualintech.taskcentre.controller.contract.ReviewTaskSaveResultRequest;
 import com.qualintech.taskcentre.entity.ReviewTask;
-import com.qualintech.taskcentre.enums.TaskType;
 import com.qualintech.taskcentre.service.impl.ReviewTaskServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,14 +37,9 @@ public class ReviewController {
 
     @PostMapping("/update")
     public Boolean saveReviewForFlow(@RequestBody @Valid ReviewTaskSaveResultRequest request) {
-        if(request.getModule()!=null){
-            log.info("流程任务【" + request.getModule().getName() + "】保存审核记录");
-            assert request.getTaskType() == TaskType.FLOW.getCode();
-            return reviewTaskService.saveReviewForFlow(request.getOwnerId(), request.getTaskId(), request.getModule(), request.getTaskState(), request.getReviewState());
-        }else{
-            log.info("委托任务【" + request.getModule().getName() + "】保存审核记录");
-            return reviewTaskService.saveReviewForDelegate(request.getOwnerId(), request.getTaskId(), request.getTaskState(), request.getReviewState());
-        }
+        log.info("委托任务【" + request.getModule().getName() + "】保存审核记录");
+        return reviewTaskService.saveReviewForDelegate(request.getOwnerId(), request.getTaskId(), request.getTaskState(), request.getReviewState());
+
     }
 
     @PostMapping("/query")

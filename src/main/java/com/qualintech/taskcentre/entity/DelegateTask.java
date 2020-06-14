@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.qualintech.taskcentre.enums.DelegateState;
+import com.qualintech.taskcentre.enums.DelegateType;
 import com.qualintech.taskcentre.enums.ReviewState;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -33,6 +34,12 @@ public class DelegateTask {
      */
     @TableField(value = "state")
     private DelegateState state;
+
+    /**
+     * state
+     */
+    @TableField(value = "module")
+    private DelegateType delegateType;
 
     @TableField(value = "flow_task_id")
     private Long flowTaskId;
