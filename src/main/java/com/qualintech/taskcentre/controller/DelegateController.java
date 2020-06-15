@@ -1,8 +1,10 @@
 package com.qualintech.taskcentre.controller;
 
-import com.qualintech.taskcentre.controller.contract.FlowTaskCreateRequest;
+import com.qualintech.taskcentre.controller.contract.DelegateTaskCreateRequest;
 import com.qualintech.taskcentre.entity.DelegateTask;
-import com.qualintech.taskcentre.entity.Material;
+import com.qualintech.taskcentre.enums.DelegateEvent;
+import com.qualintech.taskcentre.enums.DelegateState;
+import com.qualintech.taskcentre.enums.DelegateType;
 import com.qualintech.taskcentre.service.impl.DelegateTaskServiceImpl;
 import com.qualintech.taskcentre.statemachine.DelegateStateMachineEngine;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,23 +29,17 @@ public class DelegateController {
     }
 
     @PostMapping("")
-    public DelegateTask create(@RequestBody FlowTaskCreateRequest request) {
-        return delegateTaskService.create(request.getOwnerId());
+    public Long create(@RequestBody DelegateTaskCreateRequest request) {
+        DelegateType delegateType = request.getDelegateType();
+        return delegateTaskService.create(request.getOwnerId(),request.getFlowTaskId(),delegateType);
     }
 
-    @GetMapping("/{id}/dispatch")
-    public Material dispatch(@PathVariable long id) throws Exception {
+    @GetMapping("/{id}/{event}")
+    public DelegateTask dispatch(@PathVariable long id, @PathVariable long event) {
         DelegateTask delegateTask = delegateTaskService.getById(id);
-        delegateStateMachineEngine.fire(delegateTask.getState(), delegateTaskService.DISPATCH, material);
-        return material;
+        DelegateEvent delegateEvent = DelegateEvent.valueOf(String.valueOf(event));
+        delegateStateMachineEngine.fire(delegateTask.getState(), delegateEvent, delegateTask);
+        return delegateTask;
     }
-
-//    @GetMapping("/{id}/refund")
-//    public Material materialRefund(@PathVariable long id) throws Exception {
-//        Material material = materialService.getById(id);
-//        materialStateMachineEngine.fire(material.getState(), OrderEvent.DELIVER, material);
-//        return order;
-//    }
-
 
 }

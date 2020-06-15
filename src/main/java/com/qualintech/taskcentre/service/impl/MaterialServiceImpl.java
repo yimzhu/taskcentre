@@ -29,10 +29,6 @@ public class MaterialServiceImpl extends ServiceImpl<MaterialMapper, Material> {
         material.setDelegateFlag(0);
         material.setDelegateState(DelegateState.CLOSE);
 
-        /** 初始化 review flag 0-关闭 1-开启 */
-        material.setReviewFlag(0);
-        material.setReviewState(ReviewState.CLOSE);
-
         materialMapper.insert(material);
 
         return material;

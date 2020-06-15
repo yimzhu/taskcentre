@@ -32,7 +32,7 @@ public class ReviewController {
 
     @PostMapping("")
     public boolean createReview(@RequestBody @Validated ReviewTaskCreateRequest request) {
-        return reviewTaskService.create(request.getOwnerId(),request.getTaskId(),request.getTaskType(),request.getTaskState());
+        return reviewTaskService.create(request.getOwnerId(),request.getTaskId(),request.getTaskState());
     }
 
     @PostMapping("/update")

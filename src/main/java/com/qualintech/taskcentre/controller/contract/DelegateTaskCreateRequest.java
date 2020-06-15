@@ -8,7 +8,9 @@ import lombok.Data;
  * @author yimzhu
  */
 @Data
-public class FlowTaskCreateRequest {
+public class DelegateTaskCreateRequest {
     private Long ownerId;
+    private Long flowTaskId;
     private Module module;
+    private Long delegateType;
 }
