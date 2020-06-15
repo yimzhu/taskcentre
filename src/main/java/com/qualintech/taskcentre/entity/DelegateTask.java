@@ -24,47 +24,74 @@ import java.time.LocalDateTime;
 @TableName(value = "delegate_task")
 public class DelegateTask {
     /**
-     * id
+     * 委托任务ID
      */
     @TableId(value = "id", type = IdType.AUTO)
     private Long id;
 
     /**
-     * state
+     * 委托状态
      */
     @TableField(value = "state")
     private DelegateState state;
 
     /**
-     * state
+     * 委托类型
      */
     @TableField(value = "module")
     private DelegateType delegateType;
 
+    /**
+     * 挂钩的流程任务ID
+     */
     @TableField(value = "flow_task_id")
     private Long flowTaskId;
 
+    /**
+     * 当前执行人
+     */
     @TableField(value = "owner_id")
     private Long ownerId;
 
+    /**
+     * 创建时间
+     */
     @TableField(value = "insert_time")
     private LocalDateTime insertTime;
 
+    /**
+     * 完成时间
+     */
     @TableField(value = "complete_time")
     private LocalDateTime completeTime;
 
+    /**
+     * 期望完成时间
+     */
     @TableField(value = "overdue_time")
     private LocalDateTime overdueTime;
 
+    /**
+     * 逾期标记
+     */
     @TableField(value = "overdue_flag")
     private Integer overdueFlag;
 
+    /**
+     * 审核状态
+     */
     @TableField(value = "review_state")
     private ReviewState reviewState;
 
+    /**
+     * 审核标记
+     */
     @TableField(value = "review_flag")
     private Integer reviewFlag;
 
+    /**
+     * 是否启用
+     */
     @TableField(value = "is_active")
     private Integer isActive;
 

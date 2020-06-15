@@ -58,32 +58,8 @@ public class FlowTask {
     @TableField(value = "complete_time")
     private LocalDateTime completeTime;
 
-    /**
-     * Overdue Time 逾期时间
-     */
-    @TableField(value = "overdue_time")
-    private LocalDateTime overdueTime;
-
-    /**
-     * Overdue Flag 逾期标记
-     */
-    @TableField(value = "overdue_flag")
-    private Integer overdueFlag;
-
-    /**
-     * Review State 审核状态 2000-未审核，2010-审核通过，2011-审核失败
-     */
-    @TableField(value = "review_state")
-    private ReviewState reviewState;
-
-    /**
-     * Review Flag 审核标记，是否需要审核
-     */
-    @TableField(value = "review_flag")
-    private Integer reviewFlag;
-
-    /**
-     * Delegate State 委托状态 1000-未完成，1010-完成，1011-已转交, 0-委托进行中(FlowTask用), 1-委托结束(FlowTask用), 999-未知
+     /**
+     * Delegate State 委托状态 0-委托进行中(FlowTask用), 1-委托结束(FlowTask用), 999-未知
      */
     @TableField(value = "delegate_state")
     private DelegateState delegateState;

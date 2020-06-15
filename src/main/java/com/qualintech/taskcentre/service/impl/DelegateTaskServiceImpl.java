@@ -11,6 +11,7 @@ import com.qualintech.taskcentre.enums.DelegateType;
 import com.qualintech.taskcentre.enums.Module;
 import com.qualintech.taskcentre.mapper.DelegateTaskMapper;
 import com.qualintech.taskcentre.mapper.FlowTaskMapper;
+import com.qualintech.taskcentre.mapper.TransferHistoryMapper;
 import com.qualintech.taskcentre.service.IFlowTaskService;
 import com.qualintech.taskcentre.service.IDelegateTaskService;
 import com.qualintech.taskcentre.service.ITransferHistoryTaskService;
@@ -34,16 +35,17 @@ public class DelegateTaskServiceImpl extends ServiceImpl<DelegateTaskMapper,Dele
     private FlowTaskMapper flowTaskMapper;
 
     @Autowired
-    private TransferHistory iTransferHistoryTaskService;
+    private TransferHistoryMapper transferHistoryMapper;
 
     /**
      * 创建委托任务
      * @param ownerId 委托人
-     * @param taskId 任务ID
+     * @param flowTaskId 流程任务ID
+     * @param delegateType 委托类型
      * @return
      */
     //TODO 委托人已对象方式替换
-    public Long create(Long ownerId, Long taskId){
+    public Long create(Long ownerId, Long flowTaskId, DelegateType delegateType){
         //设置主任务中对应任务的委托状态为未完成，委托标记已委托
         FlowTask flowTask = new FlowTask();
         flowTask.setDelegateState(DelegateState.CLOSE);
@@ -52,15 +54,16 @@ public class DelegateTaskServiceImpl extends ServiceImpl<DelegateTaskMapper,Dele
         int sqlResult;
 
         UpdateWrapper<FlowTask> updateWrapper = new UpdateWrapper<>();
-        updateWrapper.eq("id",taskId);
+        updateWrapper.eq("id",flowTaskId);
         sqlResult = flowTaskMapper.update(flowTask,updateWrapper);
-        log.info("初始化流程任务[" + taskId + "]的审核状态：" + sqlResult);
+        log.info("初始化流程任务[" + flowTaskId + "]的委托状态：" + sqlResult);
         assert sqlResult!=0?true:false;
 
         DelegateTask delegateTask = new DelegateTask();
 //        ZonedDateTime zonedDateTime = ZonedDateTime.now();
-        delegateTask.setFlowTaskId(taskId);
+        delegateTask.setFlowTaskId(flowTaskId);
         delegateTask.setOwnerId(ownerId);
+        delegateTask.setDelegateType(delegateType);
         delegateTask.setState(DelegateState.INIT);
         sqlResult = delegateTaskMapper.insert(delegateTask);
         log.info("委托任务已创建，委托任务ID【"+delegateTask.getId()+"】, 委托人【"+ownerId+"】");
@@ -110,32 +113,37 @@ public class DelegateTaskServiceImpl extends ServiceImpl<DelegateTaskMapper,Dele
      * 转交任务
      * @param oldOwnerId 现执行人
      * @param newOwnerId 目标执行人
-     * @param taskId 任务ID
+     * @param delegateTaskId 任务ID
      * @param taskState 任务
      * @param module
      * @return
      */
-    public boolean transfer(Long oldOwnerId, Long newOwnerId, Long taskId, Integer taskState, Module module){
-        Boolean sqlResult;
+    public boolean transfer(Long oldOwnerId, Long newOwnerId, Long delegateTaskId, Integer taskState, Module module){
+        int sqlResult;
+
+        QueryWrapper<DelegateTask> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("id", delegateTaskId);
+        DelegateTask delegateTask = delegateTaskMapper.selectOne(queryWrapper);
+
         //保存当前执行人到历史表
         TransferHistory transferHistory = new TransferHistory();
-        transferHistory.setTaskId(taskId);
-        transferHistory.setModule(module);
+        transferHistory.setDelegateTaskId(delegateTaskId);
+        transferHistory.setDelegateType(delegateTask.getDelegateType());
         transferHistory.setOldOwnerId(oldOwnerId);
         transferHistory.setNewOwnerId(newOwnerId);
         transferHistory.setTaskState(taskState);
-        sqlResult = iTransferHistoryTaskService.save(transferHistory);
+        sqlResult = transferHistoryMapper.insert(transferHistory);
         log.info("保存执行人变更记录，执行成功：" + sqlResult);
-        assert sqlResult;
+        assert sqlResult!=0?true:false;
 
         //变更当前委托表中执行人
         UpdateWrapper<DelegateTask> delegateTaskUpdateWrapper = new UpdateWrapper<>();
         delegateTaskUpdateWrapper.eq("is_active",1);
-        delegateTaskUpdateWrapper.eq("flow_task_id", taskId);
+        delegateTaskUpdateWrapper.eq("id", delegateTaskId);
         delegateTaskUpdateWrapper.eq("owner_id", oldOwnerId);
-        sqlResult = iDelegateTaskService.update(DelegateTask.builder().ownerId(newOwnerId).build(), delegateTaskUpdateWrapper);
+        sqlResult = delegateTaskMapper.update(DelegateTask.builder().ownerId(newOwnerId).build(), delegateTaskUpdateWrapper);
         log.info("更新当前委托表中执行人：由【" + oldOwnerId + "】到【" + newOwnerId + "】，" + "执行结果成功:" + sqlResult);
-        assert sqlResult;
+        assert sqlResult!=0?true:false;
         return true;
     }
 }

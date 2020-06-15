@@ -7,6 +7,7 @@ import com.qualintech.taskcentre.entity.Ncr;
 import com.qualintech.taskcentre.entity.Order;
 import com.qualintech.taskcentre.enums.MaterialState;
 import com.qualintech.taskcentre.enums.Module;
+import com.qualintech.taskcentre.enums.NcrState;
 import com.qualintech.taskcentre.enums.OrderState;
 import com.qualintech.taskcentre.mapper.FlowTaskMapper;
 import com.qualintech.taskcentre.service.INcrService;
@@ -28,10 +29,8 @@ public class FlowTaskServiceImpl extends ServiceImpl<FlowTaskMapper, FlowTask> {
     private OrderServiceImpl orderService;
 
     @Autowired
-    private INcrService iNcrService;
+    private NcrServiceImpl ncrService;
 
-    @Autowired
-    private MaterialStateMachineEngine materialStateMachineEngine;
 
     /**
      * 创建流程任务
@@ -41,7 +40,7 @@ public class FlowTaskServiceImpl extends ServiceImpl<FlowTaskMapper, FlowTask> {
         //TODO 工厂类包装？
         if(module.equals(Module.MATERIAL)) {
             Material material = new Material();
-            material.setState(MaterialState.INIT);
+            material.setState(MaterialState.BASIC_INFO);
             material.setModule(Module.MATERIAL);
             materialService.save(material);
             log.info("流程任务已创建，任务类型【" + module.getName() + "】，任务【" + material.getId() + "】");
@@ -49,9 +48,9 @@ public class FlowTaskServiceImpl extends ServiceImpl<FlowTaskMapper, FlowTask> {
         }
         else if(module.equals(Module.NCR)){
             Ncr ncr = new Ncr();
-            ncr.setState(OrderState.UNPAID);
+            ncr.setState(NcrState.RECORD);
             ncr.setModule(Module.NCR);
-            iNcrService.save(ncr);
+            ncrService.save(ncr);
             log.info("流程任务已创建，任务类型【" + module.getName() + "】，任务【" + ncr.getId() + "】");
             return ncr.getId();
         }

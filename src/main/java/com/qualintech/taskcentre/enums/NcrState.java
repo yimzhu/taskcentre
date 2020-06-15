@@ -15,18 +15,12 @@ import lombok.Getter;
 public enum NcrState {
     /** 问题信息登记 */
     RECORD(10,"问题信息登记"),
-    /** 问题处置方案 */
-    ISSUE_SOLUTION(20,"问题处置方案"),
-    /** 方案执行结果 */
-    ISSUE_RESULT(21,"方案执行结果"),
-    /** 方案执行结果 */
-    ISSUE_VERIFICATION(22,"处置结果验证"),
-    /** 方案执行结果 */
-    SUSPICIONS_CHECK(30,"可疑品排查"),
-    /** 方案执行结果 */
-    SHORT_TERM_SOLUTION(40,"短期控制方案"),
-    SHORT_TERM_RESULT(41,"方案执行结果"),
-    SHORT_TERM_VERIFICATION(41,"方案执行结果");
+    /** 委托处理问题 */
+    RESOLVING(20,"委托处理问题"),
+    /** 审核结果 */
+    REVIEWING(21,"审核结果"),
+    /** 已关闭 */
+    CLOSED(22,"已关闭");
 
     @JsonValue
     @EnumValue

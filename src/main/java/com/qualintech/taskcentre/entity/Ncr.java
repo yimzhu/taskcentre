@@ -4,10 +4,7 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import com.qualintech.taskcentre.enums.DelegateState;
-import com.qualintech.taskcentre.enums.Module;
-import com.qualintech.taskcentre.enums.OrderState;
-import com.qualintech.taskcentre.enums.ReviewState;
+import com.qualintech.taskcentre.enums.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -30,7 +27,7 @@ public class Ncr {
      * State 状态
      */
     @TableField(value = "state")
-    private OrderState state;
+    private NcrState state;
 
 
     /**

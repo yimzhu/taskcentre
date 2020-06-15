@@ -3,8 +3,8 @@ package com.qualintech.taskcentre.statemachine;
 import com.qualintech.taskcentre.entity.Material;
 import com.qualintech.taskcentre.enums.MaterialEvent;
 import com.qualintech.taskcentre.enums.MaterialState;
-import com.qualintech.taskcentre.statemachine.actions.DelegateNodePassAction;
-import com.qualintech.taskcentre.statemachine.conditions.MaterialReviewCheckCondition;
+import com.qualintech.taskcentre.statemachine.actions.MaterialNodePassAction;
+import com.qualintech.taskcentre.statemachine.conditions.MaterialTransitionCondition;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -19,9 +19,7 @@ import org.squirrelframework.foundation.fsm.StateMachineBuilderFactory;
 
 @Service
 public class MaterialStateMachineEngine implements ApplicationContextAware {
-
     private StateMachineBuilder<MaterialStateMachine, MaterialState, MaterialEvent, Material> stateMachineBuilder;
-
     private ApplicationContext applicationContext;
 
     public MaterialStateMachineEngine() {
@@ -33,12 +31,21 @@ public class MaterialStateMachineEngine implements ApplicationContextAware {
      * 使用这种方式是为了统一管理 action 与 condition 注解的方式会让人感到不安
      */
     protected void configBuilder() {
-        /** 待发送 >> 派发任务 >> 处理中 */
+        /** 基本信息 >> 检验 >> 检验记录 */
         stateMachineBuilder.externalTransition()
-                .from(MaterialState.INIT).to(MaterialState.PROCESSING).on(MaterialEvent.DISPATCH)
-                .when(applicationContext.getBean(MaterialReviewCheckCondition.class))
-                .perform(applicationContext.getBean(DelegateNodePassAction.class));
-
+                .from(MaterialState.BASIC_INFO).to(MaterialState.INSPECTION_RECORDS).on(MaterialEvent.TO_INSPECTION)
+                .when(applicationContext.getBean(MaterialTransitionCondition.class))
+                .perform(applicationContext.getBean(MaterialNodePassAction.class));
+        /** 检验记录 >> 判定 >> 结论判定 */
+        stateMachineBuilder.externalTransition()
+                .from(MaterialState.INSPECTION_RECORDS).to(MaterialState.CONCLUSION).on(MaterialEvent.TO_CONCLUSION)
+                .when(applicationContext.getBean(MaterialTransitionCondition.class))
+                .perform(applicationContext.getBean(MaterialNodePassAction.class));
+        /** 结论判定 >> 审核 >> 结论判定 */
+        stateMachineBuilder.externalTransition()
+                .from(MaterialState.CONCLUSION).to(MaterialState.FINAL_REVIEW).on(MaterialEvent.TO_REVIEW)
+                .when(applicationContext.getBean(MaterialTransitionCondition.class))
+                .perform(applicationContext.getBean(MaterialNodePassAction.class));
     }
 
     @Override

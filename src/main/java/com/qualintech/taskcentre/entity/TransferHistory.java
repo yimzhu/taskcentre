@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.qualintech.taskcentre.enums.DelegateType;
 import com.qualintech.taskcentre.enums.Module;
 import com.qualintech.taskcentre.enums.OrderState;
 import lombok.AllArgsConstructor;
@@ -32,13 +33,13 @@ public class TransferHistory {
      * 关联任务ID
      */
     @TableField(value = "task_id")
-    private Long taskId;
+    private Long delegateTaskId;
 
     /**
      * 任务模型
      */
     @TableField(value = "module")
-    private Module module;
+    private DelegateType delegateType;
 
     /**
      * State 状态, 对应Material等表中State状态

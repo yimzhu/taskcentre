@@ -22,7 +22,7 @@ public class MaterialServiceImpl extends ServiceImpl<MaterialMapper, Material> {
     public Material create(Long userId){
         Material material = new Material();
         material.setOwnerId(userId);
-        material.setState(MaterialState.INIT);
+        material.setState(MaterialState.BASIC_INFO);
         material.setInsertTime(LocalDateTime.now());
 
         /** 初始化 delegate flag 0-关闭 1-开启 */
