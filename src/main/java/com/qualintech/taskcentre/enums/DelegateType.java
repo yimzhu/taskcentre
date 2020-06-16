@@ -34,4 +34,11 @@ public enum DelegateType {
     @EnumValue
     private int code;
     private String name;
+
+    public static DelegateType getDelegateType(int code){
+        for(DelegateType delegateType:DelegateType.values()){
+            return delegateType;
+        }
+        return null;
+    }
 }

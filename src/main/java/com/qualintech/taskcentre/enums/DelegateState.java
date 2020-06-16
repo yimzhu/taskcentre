@@ -24,12 +24,12 @@ public enum DelegateState {
     /**
      * 初始化 (FLOW TASK ONLY)
      */
-    OPEN(0,"开启"),
+    OPEN(1,"开启"),
 
     /**
      * 结束 (FLOW TASK ONLY)
      */
-    CLOSE(1,"关闭");
+    CLOSE(0,"关闭");
 
     @JsonValue
     @EnumValue

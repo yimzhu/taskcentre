@@ -4,6 +4,8 @@ import com.qualintech.taskcentre.enums.DelegateType;
 import com.qualintech.taskcentre.enums.Module;
 import lombok.Data;
 
+import java.time.LocalDateTime;
+
 /**
  * @author yimzhu
  */
@@ -12,5 +14,6 @@ public class DelegateTaskCreateRequest {
     private Long ownerId;
     private Long flowTaskId;
     private Module module;
-    private Long delegateType;
+    private int delegateType;
+    private String expectTime;
 }

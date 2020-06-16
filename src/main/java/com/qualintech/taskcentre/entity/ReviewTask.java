@@ -91,7 +91,4 @@ public class ReviewTask {
 
     public static final String COL_STATE = "state";
 
-//    public static OrderBuilder builder() {
-//        return new OrderBuilder();
-//    }
 }
