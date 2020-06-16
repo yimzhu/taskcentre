@@ -10,12 +10,14 @@ import java.util.List;
  */
 @Data
 public class ReviewTaskCreateRequest {
-    @NotNull
+    @NotNull(message = "ownerId，执行人ID列表不能为空")
     private List<Long> ownerId;
-    @NotNull
-    private Integer taskId;
-    @NotNull
-    private Integer taskType;
-    @NotNull(message = "taskState不能为空")
-    private Integer taskState;
+    @NotNull(message = "delegateTaskId，委托任务ID不能为空")
+    private Integer delegateTaskId;
+    @NotNull(message = "delegateType，委托类型不能为空")
+    private Integer delegateTaskType;
+    @NotNull(message = "delegateTaskState，委托任务状态不能为空")
+    private Integer delegateTaskState;
+    @NotNull(message = "expectTime，预期时间不能为空")
+    private String expectTime;
 }

@@ -32,7 +32,7 @@ public class ReviewController {
 
     @PostMapping("")
     public boolean createReview(@RequestBody @Validated ReviewTaskCreateRequest request) {
-        return reviewTaskService.create(request.getOwnerId(),request.getTaskId(),request.getTaskState());
+        return reviewTaskService.create(request.getOwnerId(),request.getDelegateTaskType(), request.getDelegateTaskId(),request.getDelegateTaskState(), request.getExpectTime());
     }
 
     @PostMapping("/update")
@@ -44,6 +44,6 @@ public class ReviewController {
 
     @PostMapping("/query")
     public List<ReviewTask> queryReviewResultCount(@RequestBody @Valid QueryReviewResultRequest request) throws Exception {
-        return reviewTaskService.queryReviewRecords(request.getOwnerId(),request.getTaskId(),request.getTaskState(),request.getResult());
+        return reviewTaskService.queryReviewRecords(request.getTaskId(),request.getTaskState(),request.getResult());
     }
 }

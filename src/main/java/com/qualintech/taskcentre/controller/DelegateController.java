@@ -4,15 +4,18 @@ import com.qualintech.taskcentre.controller.contract.DelegateTaskCreateRequest;
 import com.qualintech.taskcentre.entity.DelegateTask;
 import com.qualintech.taskcentre.enums.DelegateEvent;
 import com.qualintech.taskcentre.enums.DelegateType;
-import com.qualintech.taskcentre.mapper.DelegateTaskMapper;
 import com.qualintech.taskcentre.service.impl.DelegateTaskServiceImpl;
 import com.qualintech.taskcentre.statemachine.DelegateStateMachineEngine;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
+import javax.validation.Valid;
 
 /**
  * @author yimzhu
  */
+@Validated
 @RestController
 @RequestMapping("delegate")
 public class DelegateController {
@@ -22,16 +25,13 @@ public class DelegateController {
     @Autowired
     private DelegateStateMachineEngine delegateStateMachineEngine;
 
-    @Autowired
-    private DelegateTaskMapper delegateTaskMapper;
-
     @GetMapping("/{id}")
     public DelegateTask get(@PathVariable long id) {
         return delegateTaskService.getById(id);
     }
 
     @PostMapping("")
-    public Long create(@RequestBody DelegateTaskCreateRequest request) {
+    public Long create(@RequestBody @Valid DelegateTaskCreateRequest request) {
         DelegateType delegateType = DelegateType.getDelegateType(request.getDelegateType());
         return delegateTaskService.create(request.getOwnerId(),request.getFlowTaskId(),delegateType, request.getExpectTime());
     }

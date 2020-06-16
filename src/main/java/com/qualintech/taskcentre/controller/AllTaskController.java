@@ -17,8 +17,13 @@ public class AllTaskController {
     @Autowired
     private DelegateTaskMapper delegateTaskMapper;
 
+    /**
+     * 根据flow task id查询全表
+     * @param id
+     * @return
+     */
     @GetMapping("/{id}")
-    public List<FlowDelegateReviewVO> getall(@PathVariable long id){
+    public List<FlowDelegateReviewVO> getAllTasksById(@PathVariable long id){
         return delegateTaskMapper.getFlowDelegateReviewTask(id);
     }
 

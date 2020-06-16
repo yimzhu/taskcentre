@@ -9,8 +9,8 @@ import javax.validation.constraints.NotNull;
 @Data
 public class QueryReviewResultRequest {
 
-    @NotNull
-    private Long ownerId;
+//    @NotNull
+//    private Long ownerId;
     @NotNull
     private Integer taskId;
     @NotNull

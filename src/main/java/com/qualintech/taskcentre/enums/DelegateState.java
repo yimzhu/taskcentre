@@ -35,4 +35,11 @@ public enum DelegateState {
     @EnumValue
     private int code;
     private String name;
+
+    public static DelegateState getDelegateState(int code){
+        for(DelegateState delegateState:DelegateState.values()){
+            return delegateState;
+        }
+        return null;
+    }
 }

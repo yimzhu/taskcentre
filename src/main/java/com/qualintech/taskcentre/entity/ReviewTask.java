@@ -4,6 +4,8 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.qualintech.taskcentre.enums.DelegateState;
+import com.qualintech.taskcentre.enums.DelegateType;
 import com.qualintech.taskcentre.enums.Module;
 import com.qualintech.taskcentre.enums.ReviewState;
 import lombok.AllArgsConstructor;
@@ -30,20 +32,20 @@ public class ReviewTask {
     /**
      * Task State
      */
-    @TableField(value = "out_task_state")
-    private Integer outTaskState;
+    @TableField(value = "delegate_task_state")
+    private DelegateState delegateTaskState;
 
     /**
      * Task ID
      */
-    @TableField(value = "out_task_id")
-    private Integer outTaskId;
+    @TableField(value = "delegate_task_id")
+    private Long delegateTaskId;
 
     /**
      * Module 模型
      */
-    @TableField(value = "module")
-    private Module module;
+    @TableField(value = "delegate_task_type")
+    private DelegateType delegateType;
 
     /**
      * Owner

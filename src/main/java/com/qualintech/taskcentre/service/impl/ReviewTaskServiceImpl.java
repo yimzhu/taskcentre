@@ -5,6 +5,8 @@ import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.qualintech.taskcentre.entity.DelegateTask;
 import com.qualintech.taskcentre.entity.ReviewTask;
+import com.qualintech.taskcentre.enums.DelegateState;
+import com.qualintech.taskcentre.enums.DelegateType;
 import com.qualintech.taskcentre.enums.ReviewState;
 import com.qualintech.taskcentre.mapper.DelegateTaskMapper;
 import com.qualintech.taskcentre.mapper.ReviewTaskMapper;
@@ -12,6 +14,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 /**
@@ -31,11 +35,12 @@ public class ReviewTaskServiceImpl extends ServiceImpl<ReviewTaskMapper, ReviewT
     /**
      * 创建审核任务
      * @param ownerIds 审核人列表
+     * @param taskType 上一级任务类型
      * @param taskId 上一级任务ID
      * @param taskState 上一级任务状态
      * @return
      */
-    public boolean create(List<Long> ownerIds, Integer taskId, Integer taskState){
+    public boolean create(List<Long> ownerIds, int taskType, long taskId, int taskState, String expectTime){
         //设置主任务中对应任务的审核状态为0-开启，1-关闭
         DelegateTask delegateTask = new DelegateTask();
         delegateTask.setReviewFlag(1);
@@ -48,9 +53,16 @@ public class ReviewTaskServiceImpl extends ServiceImpl<ReviewTaskMapper, ReviewT
         assert count==1?true:false;
 
         ReviewTask reviewTask = new ReviewTask();
-        reviewTask.setOutTaskId(taskId);
-        reviewTask.setOutTaskState(taskState);
+        reviewTask.setDelegateTaskId(taskId);
+        DelegateType delegateType = DelegateType.getDelegateType(taskType);
+        reviewTask.setDelegateType(delegateType);
+        DelegateState delegateState = DelegateState.getDelegateState(taskState);
+        reviewTask.setDelegateTaskState(delegateState);
         reviewTask.setResult(ReviewState.IN_REVIEW);
+        DateTimeFormatter df = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        LocalDateTime ldt = LocalDateTime.parse(expectTime,df);
+        reviewTask.setOverdueTime(ldt);
+
         for(Long ownerId:ownerIds){
             reviewTask.setOwnerId(ownerId);
             count = reviewTaskMapper.insert(reviewTask);
@@ -67,7 +79,7 @@ public class ReviewTaskServiceImpl extends ServiceImpl<ReviewTaskMapper, ReviewT
      * @param taskState 流程任务状态
      * @param result 审核结果
      */
-    public boolean saveReviewForDelegate(Long ownerId, Integer taskId, Integer taskState, ReviewState result){
+    public boolean saveReviewForDelegate(long ownerId, int taskId, int taskState, ReviewState result){
         ReviewTask reviewTask = new ReviewTask();
         reviewTask.setResult(result);
 
@@ -81,7 +93,7 @@ public class ReviewTaskServiceImpl extends ServiceImpl<ReviewTaskMapper, ReviewT
         assert count==1?true:false;
 
         //检查审核是否全部结束
-        count = queryReviewCount(ownerId, taskId, taskState,0);
+        count = queryReviewCount(taskId, taskState,0);
         if(count!=0){
             log.info("任务ID【" + taskId + "】的审核流未结束，本次结果已保存。");
             return true;
@@ -100,17 +112,16 @@ public class ReviewTaskServiceImpl extends ServiceImpl<ReviewTaskMapper, ReviewT
 
     /**
      * 查询审核状态（未通过，通过）的数量
-     * @param ownerId
      * @param taskId
      * @param taskState
      * @param result 0-未通过（失败+待审核） 1-通过
      * @return
      */
-    public int queryReviewCount(Long ownerId, Integer taskId, Integer taskState, Integer result){
+    public int queryReviewCount(int taskId, int taskState, Integer result){
         if(result.equals(0)){
             QueryWrapper<ReviewTask> reviewTaskQueryWrapper = new QueryWrapper<>();
             reviewTaskQueryWrapper.and(i->i.eq("out_task_id", taskId)
-                    .eq("out_task_state", taskState)
+                    .eq("delegate_task_state", taskState)
                     .ne("result", ReviewState.REVIEW_PASS)
                     .eq("is_active",1));
             count = reviewTaskMapper.selectCount(reviewTaskQueryWrapper);
@@ -118,7 +129,7 @@ public class ReviewTaskServiceImpl extends ServiceImpl<ReviewTaskMapper, ReviewT
         }else if(result.equals(1)){
             QueryWrapper<ReviewTask> reviewTaskQueryWrapper = new QueryWrapper<>();
             reviewTaskQueryWrapper.and(i->i.eq("out_task_id", taskId)
-                    .eq("out_task_state", taskState)
+                    .eq("delegate_task_state", taskState)
                     .eq("result", ReviewState.REVIEW_PASS)
                     .eq("is_active",1));
             count = reviewTaskMapper.selectCount(reviewTaskQueryWrapper);
@@ -129,24 +140,23 @@ public class ReviewTaskServiceImpl extends ServiceImpl<ReviewTaskMapper, ReviewT
 
     /**
      * 查询审核状态（未通过，通过）的数量
-     * @param ownerId
      * @param taskId
      * @param taskState
      * @param result 0-未通过（失败+待审核） 1-通过
      * @return
      */
-    public List<ReviewTask> queryReviewRecords(Long ownerId, Integer taskId, Integer taskState, Integer result){
+    public List<ReviewTask> queryReviewRecords(int taskId, int taskState, Integer result){
         List<ReviewTask> list = null;
         if(result.equals(0)){
             QueryWrapper<ReviewTask> reviewTaskQueryWrapper = new QueryWrapper<>();
             reviewTaskQueryWrapper.and(i->i.eq("out_task_id", taskId)
-                    .eq("out_task_state", taskState)
+                    .eq("delegate_task_state", taskState)
                     .ne("result", ReviewState.REVIEW_PASS));
             list = reviewTaskMapper.selectList(reviewTaskQueryWrapper);
         }else if(result.equals(1)){
             QueryWrapper<ReviewTask> reviewTaskQueryWrapper = new QueryWrapper<>();
             reviewTaskQueryWrapper.and(i->i.eq("out_task_id", taskId)
-                    .eq("out_task_state", taskState)
+                    .eq("delegate_task_state", taskState)
                     .eq("result", ReviewState.REVIEW_PASS));
             list = reviewTaskMapper.selectList(reviewTaskQueryWrapper);
         }
